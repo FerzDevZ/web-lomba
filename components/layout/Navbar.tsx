@@ -1,0 +1,104 @@
+import Link from "next/link"
+import { PlusCircle, LayoutDashboard, MessageCircle } from "lucide-react"
+import { auth, signOut } from "@/lib/auth"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { MobileMenu } from "@/components/layout/mobile-menu"
+import { SearchBar } from "@/components/layout/search-bar"
+import { NotificationBell } from "@/components/layout/notification-bell"
+import { ImpersonationBar } from "@/components/layout/impersonation-bar"
+
+export default async function Navbar() {
+  const session = await auth()
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
+        {/* Logo */}
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient text-base font-extrabold text-primary-foreground shadow-glow transition-transform duration-base group-hover:rotate-6 group-hover:scale-105">
+            S
+          </span>
+          <span className="hidden text-lg font-bold tracking-tight sm:block">
+            Servis<span className="text-primary-strong">Lokal</span>
+          </span>
+        </Link>
+
+        {/* Search dengan shortcut "/" */}
+        <SearchBar />
+
+        {/* Nav kanan */}
+        <nav className="ml-auto flex items-center gap-1.5 md:gap-2">
+          <Link
+            href="/services"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:block"
+          >
+            Jelajahi
+          </Link>
+
+          <ThemeToggle />
+
+          {session?.user ? (
+            <>
+              <NotificationBell />
+              <Link href="/dashboard" className="hidden sm:block">
+                <Button variant="outline" size="sm" aria-label="Buka dashboard">
+                  <LayoutDashboard aria-hidden="true" />
+                  <span className="hidden lg:inline">Dashboard</span>
+                </Button>
+              </Link>
+              <Link href="/dashboard/provider/buka-jasa" className="hidden sm:block">
+                <Button size="sm" className="shadow-glow" aria-label="Buka jasa baru">
+                  <PlusCircle aria-hidden="true" />
+                  <span className="hidden lg:inline">Buka Jasa</span>
+                </Button>
+              </Link>
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                  <AvatarFallback className="bg-primary/15 text-sm font-bold text-primary-strong">
+                    {(session.user.name ?? "U").charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <form
+                  action={async () => {
+                    "use server"
+                    await signOut({ redirectTo: "/" })
+                  }}
+                  className="hidden md:block"
+                >
+                  <Button variant="ghost" size="sm" type="submit">
+                    Keluar
+                  </Button>
+                </form>
+              </div>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="outline" size="sm">
+                  Masuk
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="shadow-glow">
+                  Daftar
+                </Button>
+              </Link>
+            </>
+          )}
+
+          <MobileMenu session={session?.user ? true : false} />
+        </nav>
+      </div>
+
+      {/* Banner impersonasi — admin sedang menjelajah sebagai user lain */}
+      {session?.user.impersonatedBy && (
+        <ImpersonationBar
+          name={session.user.name ?? "User"}
+          role={session.user.role}
+        />
+      )}
+    </header>
+  )
+}

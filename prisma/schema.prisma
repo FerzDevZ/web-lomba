@@ -1,0 +1,128 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?
+  email        String   @unique
+  passwordHash String?
+  phone        String?
+  role         String   @default("CUSTOMER") // CUSTOMER, PROVIDER, ADMIN
+  bio          String?
+  avatarUrl    String?
+  /// Alamat lengkap yang ditulis penyedia, mis. "Jl. Braga No.45, Bandung".
+  /// Untuk ditampilkan, BUKAN untuk difilter — lihat `city`.
+  location     String?
+  /// Nama kota yang sudah dinormalkan, mis. "Bandung". Diturunkan dari
+  /// `location` lewat lib/location.ts.
+  ///
+  /// Kolom terpisah karena memfilter `location` dengan `contains` mencocokkan
+  /// potongan alamat: kueri "Jl" atau bahkan satu huruf "a" mengembalikan
+  /// seluruh katalog. Disimpan lowercase agar pencocokan tidak bergantung pada
+  /// `mode: "insensitive"` yang tidak didukung Prisma di SQLite dan akan
+  /// membuat filter jadi case-sensitive saat pindah ke PostgreSQL.
+  city         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  services     Service[]
+  ordersOrderCustomer Order[] @relation("OrderCustomer")
+  reviews      Review[]
+  messages     Message[]
+  savedServices SavedService[]
+
+  @@index([role, city])
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  icon        String?
+  description String?
+  services    Service[]
+}
+
+model Service {
+  id              Int      @id @default(autoincrement())
+  providerId      Int
+  provider        User     @relation(fields: [providerId], references: [id])
+  categoryId      Int
+  category        Category @relation(fields: [categoryId], references: [id])
+  title           String
+  slug            String   @unique
+  description     String
+  price           Float
+  deliveryTimeDays Int
+  imageUrl        String?
+  ratingAvg       Float    @default(0)
+  totalReviews    Int      @default(0)
+  status          String   @default("DRAFT") // ACTIVE, DRAFT, ARCHIVED
+  createdAt       DateTime @default(now())
+  orders          Order[]
+  savedBy         SavedService[]
+
+  @@index([categoryId, status])
+  @@index([providerId])
+}
+
+model SavedService {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId Int
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, serviceId])
+  @@index([serviceId])
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  customerId    Int
+  customer      User     @relation(fields: [customerId], references: [id], name: "OrderCustomer")
+  serviceId     Int
+  service       Service  @relation(fields: [serviceId], references: [id])
+  totalPrice    Float
+  status        String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  paymentMethod String? // transfer, ewallet, cod
+  orderNotes    String?
+  deadline      DateTime?
+  createdAt     DateTime @default(now())
+  completedAt   DateTime?
+  reviews       Review[]
+  messages      Message[]
+
+  @@index([customerId, status])
+  @@index([serviceId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  senderId  Int
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id])
+  reviewerId  Int
+  reviewer    User     @relation(fields: [reviewerId], references: [id])
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# Batalkan run lama pada branch/PR yang sama: hanya commit terakhir yang relevan.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Prisma butuh DATABASE_URL bahkan untuk `generate`; SQLite lokal cukup
+      # untuk typecheck, unit test, dan build karena tidak ada kueri saat build.
+      DATABASE_URL: "file:./dev.db"
+      # NextAuth v5 menolak start tanpa dua env ini, termasuk saat `next build`
+      # mengevaluasi route handler.
+      AUTH_SECRET: "ci-placeholder-secret-not-used-in-production"
+      AUTH_TRUST_HOST: "true"
+      NEXTAUTH_URL: "http://localhost:3000"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # `npm ci` menuntut package-lock.json sinkron dengan package.json —
+      # itu memang yang kita inginkan sebagai pagar di CI.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      # Migrasi + seed dijalankan supaya build punya database yang valid dan
+      # skema yang sama dengan yang diharapkan kode.
+      - name: Prepare database
+        run: |
+          npx prisma migrate deploy
+          node prisma/seed.js
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
+
+      # Verifikasi runtime: server produksi harus benar-benar melayani rute,
+      # bukan hanya berhasil di-build. Tanpa langkah ini, kesalahan yang hanya
+      # muncul saat render (mis. kueri Prisma di server component) lolos CI.
+      - name: Smoke test rute produksi
+        run: |
+          npm run start &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:3000/; then break; fi
+            sleep 2
+          done
+
+          fail=0
+          check() {
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:3000$1")
+            if [ "$code" != "$2" ]; then
+              echo "FAIL $1 -> $code (harusnya $2)"
+              fail=1
+            else
+              echo "ok   $1 -> $code"
+            fi
+          }
+
+          check / 200
+          check /services 200
+          check /faq 200
+          check /login 200
+          check /register 200
+          # Rute terproteksi harus me-redirect, bukan membocorkan halaman.
+          check /dashboard 307
+          check /checkout 307
+
+          exit $fail
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      DATABASE_URL: "file:./dev.db"
+      AUTH_SECRET: "ci-placeholder-secret-not-used-in-production"
+      AUTH_TRUST_HOST: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Cache browser Playwright: unduhannya ~130 MB, tanpa cache setiap run
+      # menghabiskan menit hanya untuk mengunduh ulang.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Prepare database
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          node prisma/seed.js
+
+      - name: Build
+        run: npm run build
+
+      # playwright.config.ts menjalankan `npm run start` sendiri lewat webServer,
+      # jadi tidak perlu start manual di sini.
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Upload laporan kegagalan
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

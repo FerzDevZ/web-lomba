@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 20 14% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 4%;
+    --primary: 25 95% 53%;
+    /* Teks di atas primary WAJIB gelap: putih di atas oranye 53% hanya 2.68:1
+       (gagal AA). Dengan foreground gelap rasionya 7.11:1. */
+    --primary-foreground: 20 14% 4%;
+    /* Oranye versi gelap KHUSUS untuk teks/ikon oranye di atas background atau
+       card. --primary sendiri hanya 2.68:1 sebagai teks, jadi tidak boleh
+       dipakai untuk text-*. Rasio primary-strong: 5.0:1 (lolos AA). */
+    --primary-strong: 22 90% 38%;
+    --secondary: 25 40% 22%;
+    --secondary-foreground: 40 33% 98%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 25 8% 40%;
+    --accent: 40 60% 94%;
+    --accent-foreground: 25 40% 20%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    /* Merah versi teks. `text-destructive` sering dipakai di atas
+       `bg-destructive/10` (banner error) — kombinasi itu hanya 4.11:1 di light
+       dan 3.34:1 di dark, keduanya gagal AA. Pakai `text-destructive-strong`
+       untuk teks; `bg-destructive` + `text-destructive-foreground` untuk isian
+       solid seperti tombol. */
+    --destructive-strong: 0 72% 44%;
+    /* Token semantik status — satu sumber kebenaran untuk badge, chart,
+       dan indikator. Nilai dipisah per tema agar kontras tetap lolos AA. */
+    /* Nilai dipilih agar teks tone-on-soft lolos AA (>= 4.5:1), bukan hanya
+       3:1 — badge status memuat teks, bukan sekadar indikator warna. */
+    --success: 158 74% 27%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 158 60% 94%;
+    --warning: 32 90% 32%;
+    --warning-foreground: 0 0% 100%;
+    --warning-soft: 38 92% 94%;
+    --info: 214 84% 40%;
+    --info-foreground: 0 0% 100%;
+    --info-soft: 214 90% 95%;
+    /* Bintang rating adalah grafis non-teks: target >= 3:1 di atas card. */
+    --rating: 35 92% 38%;
+    /* Kutub kedua gradien brand. Gradien selalu primary -> brand-2 supaya
+       hanya ada satu arah & satu pasangan warna di seluruh produk. */
+    --brand-2: 42 96% 52%;
+    /* --border murni dekoratif (pemisah visual): WCAG 1.4.11 tidak menuntut
+       kontras untuk ini. --input adalah batas kontrol form, jadi WAJIB >= 3:1
+       — 35 20% 84% hanya 1.37:1, praktis tak terlihat. Sekarang 3.47:1. */
+    --border: 35 20% 88%;
+    --input: 35 20% 50%;
+    /* Ring fokus juga komponen UI: 53% hanya 2.68:1, dinaikkan ke 3.31:1. */
+    --ring: 25 95% 46%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 20 14% 4%;
+    --foreground: 40 20% 96%;
+    --card: 24 10% 7%;
+    --card-foreground: 40 20% 96%;
+    --primary: 28 96% 58%;
+    --primary-foreground: 20 14% 4%;
+    /* Dark: --primary sudah 8.43:1 sebagai teks, jadi strong = primary. */
+    --primary-strong: 28 96% 58%;
+    --secondary: 28 60% 50%;
+    --secondary-foreground: 20 14% 4%;
+    --muted: 24 8% 11%;
+    --muted-foreground: 30 8% 58%;
+    --accent: 24 12% 13%;
+    --accent-foreground: 40 20% 96%;
+    /* Putih di atas 0 70% 55% hanya 4.40:1 (gagal AA tipis); 48% → 5.29:1
+       dan masih 3.74:1 terhadap latar gelap sebagai indikator. */
+    --destructive: 0 70% 48%;
+    --destructive-foreground: 0 0% 100%;
+    /* Dark: merah harus LEBIH TERANG dari --destructive agar terbaca di atas
+       kartu gelap dan tint bg-destructive/10. */
+    --destructive-strong: 0 80% 65%;
+    /* Dark: luminansi warna dinaikkan agar tetap >= 4.5:1 di latar gelap;
+       *-soft dipakai sebagai latar badge (gelap pekat, bukan pastel). */
+    --success: 158 64% 52%;
+    --success-foreground: 20 14% 4%;
+    --success-soft: 158 40% 14%;
+    --warning: 38 94% 58%;
+    --warning-foreground: 20 14% 4%;
+    --warning-soft: 34 50% 14%;
+    --info: 213 92% 66%;
+    --info-foreground: 20 14% 4%;
+    --info-soft: 213 50% 15%;
+    --rating: 38 96% 58%;
+    --brand-2: 45 96% 60%;
+    --border: 24 8% 16%;
+    --input: 24 8% 40%;
+    --ring: 28 96% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+
+  /* Scrollbar tipis & konsisten */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Ring fokus tunggal untuk semua elemen interaktif non-Button
+     (div/li/label/summary ber-onClick, chip filter, tab kustom).
+     Dipakai supaya WCAG 2.4.7 tidak bergantung pada default browser
+     yang hilang begitu outline:none ikut ter-reset Tailwind. */
+  .focus-ring {
+    @apply outline-none ring-offset-background transition-shadow;
+  }
+  .focus-ring:focus-visible {
+    @apply ring-2 ring-ring ring-offset-2;
+  }
+
+  /* Glass panel — lebih premium */
+  .glass {
+    @apply border bg-card/80 backdrop-blur-2xl shadow-card-lg;
+  }
+
+  /* Gradien brand tunggal: dipakai logo, badge, dan aksen headline. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--brand-2))
+    );
+  }
+
+  /* Teks gradien brand untuk aksen angka/headline */
+  .text-gradient-orange {
+    @apply bg-clip-text text-transparent bg-brand-gradient;
+  }
+
+  /* Grid pattern latar (dark/light mengikuti tema) */
+  .bg-grid {
+    background-image: linear-gradient(
+        to right,
+        hsl(var(--foreground) / 0.04) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        hsl(var(--foreground) / 0.04) 1px,
+        transparent 1px
+      );
+    background-size: 56px 56px;
+  }
+
+  /* Noise halus via data-uri SVG */
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  }
+
+  /* Mask fade ke bawah untuk bagian bawah hero */
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

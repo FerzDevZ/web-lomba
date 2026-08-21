@@ -1,0 +1,157 @@
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { prisma } from "@/lib/prisma"
+import { SITE_URL as siteUrl } from "@/lib/site-url"
+import ServiceDetailClient from "./service-detail-client"
+
+export const dynamic = "force-dynamic"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const service = await prisma.service.findUnique({
+    where: { slug },
+    select: {
+      title: true,
+      description: true,
+      price: true,
+      ratingAvg: true,
+      totalReviews: true,
+      category: { select: { name: true } },
+    },
+  })
+
+  const url = `${siteUrl}/service/${slug}`
+
+  if (!service) {
+    return {
+      title: "Jasa tidak ditemukan",
+      description: "Jasa yang Anda cari tidak tersedia atau telah dihapus.",
+      alternates: { canonical: url },
+      // Halaman ini merender UI not-found tapi status HTTP-nya tetap 200:
+      // <Navbar /> adalah async server component di root layout, sehingga
+      // respons sudah di-stream (header terkirim) sebelum notFound() di bawah
+      // dievaluasi. Next.js tidak bisa mengubah status setelah itu.
+      //
+      // Tanpa noindex, crawler memperlakukannya sebagai soft 404 dan bisa
+      // mengindeks halaman kosong untuk setiap slug ngawur yang pernah
+      // ditautkan. noindex menutup celah itu tanpa merombak layout.
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const description =
+    service.description.length > 155
+      ? `${service.description.slice(0, 152)}...`
+      : service.description
+
+  const keywords = [
+    service.title,
+    service.category.name,
+    "jasa",
+    "servis lokal",
+    "marketplace jasa",
+    "penyedia jasa",
+    `jasa ${service.category.name.toLowerCase()}`,
+  ]
+
+  return {
+    title: service.title,
+    description,
+    keywords,
+    alternates: { canonical: url },
+    openGraph: {
+      title: service.title,
+      description,
+      url,
+      type: "website",
+      siteName: "ServisLokal",
+      locale: "id_ID",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: service.title,
+      description,
+    },
+  }
+}
+
+export default async function ServiceDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+
+  const service = await prisma.service.findUnique({
+    where: { slug },
+    include: {
+      provider: { select: { id: true, name: true, avatarUrl: true } },
+      category: { select: { id: true, name: true, slug: true } },
+    },
+  })
+
+  if (!service || service.status !== "ACTIVE") notFound()
+
+  const related = await prisma.service.findMany({
+    where: {
+      status: "ACTIVE",
+      categoryId: service.categoryId,
+      id: { not: service.id },
+    },
+    include: {
+      provider: { select: { id: true, name: true, avatarUrl: true } },
+      category: { select: { id: true, name: true, slug: true } },
+    },
+    orderBy: { ratingAvg: "desc" },
+    take: 3,
+  })
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.description,
+    serviceType: service.category.name,
+    url: `${siteUrl}/service/${service.slug}`,
+    provider: {
+      "@type": "Organization",
+      name: service.provider.name ?? "Penyedia ServisLokal",
+      url: `${siteUrl}/provider/${service.provider.id}`,
+    },
+    areaServed: {
+      "@type": "Country",
+      name: "Indonesia",
+    },
+    offers: {
+      "@type": "Offer",
+      price: service.price,
+      priceCurrency: "IDR",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/service/${service.slug}`,
+    },
+    aggregateRating:
+      service.totalReviews > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: service.ratingAvg,
+            reviewCount: service.totalReviews,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ServiceDetailClient service={service} related={related} />
+    </>
+  )
+}

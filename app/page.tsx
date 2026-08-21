@@ -1,0 +1,311 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  Search,
+  CreditCard,
+  MessageSquareHeart,
+  Sparkles,
+  Users,
+  Truck,
+} from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getCategoryIcon } from "@/lib/category-icons"
+import { Hero } from "@/components/landing/hero";
+import { Reveal } from "@/components/landing/reveal";
+import { Counter } from "@/components/landing/counter";
+import { ServiceTile } from "@/components/services/service-tile";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ServisLokal — Cari Jasa Lokal Terpercaya di Sekitar Anda",
+  description:
+    "Bandingkan harga, rating, dan ulasan penyedia jasa lokal: service AC, kebersihan rumah, instalasi listrik, hingga pindahan. Pesan langsung, bayar setelah selesai.",
+  alternates: { canonical: "/" },
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [
+    categories,
+    services,
+    providerCount,
+    completedOrders,
+    ratingAvg,
+    cityCount,
+    heroProviders,
+  ] = await Promise.all([
+    prisma.category.findMany({ take: 6 }),
+    prisma.service.findMany({
+      where: { status: "ACTIVE" },
+      include: {
+        provider: { select: { name: true, avatarUrl: true } },
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
+    prisma.user.count({ where: { role: "PROVIDER" } }),
+    prisma.order.count({ where: { status: "COMPLETED" } }),
+    prisma.service
+      .aggregate({
+        where: { status: "ACTIVE" },
+        _avg: { ratingAvg: true },
+      })
+      .then((r) => r._avg.ratingAvg ?? 0),
+    // Kolom `city` sudah dinormalkan saat penulisan (lihat lib/location.ts),
+    // jadi hitungannya cukup distinct — tidak perlu mem-parse alamat lagi
+    // di setiap request.
+    prisma.user
+      .findMany({
+        where: { role: "PROVIDER", city: { not: null } },
+        select: { city: true },
+        distinct: ["city"],
+      })
+      .then((rows) => rows.length),
+    // Penyedia untuk bukti sosial di hero — nama asli dari DB, bukan avatar
+    // stok. Hanya yang punya jasa aktif agar tidak memajang akun kosong.
+    prisma.user.findMany({
+      where: { role: "PROVIDER", services: { some: { status: "ACTIVE" } } },
+      select: { name: true, location: true },
+      orderBy: { createdAt: "asc" },
+      take: 5,
+    }),
+  ]);
+
+  const stats = [
+    { value: providerCount, suffix: "+", label: "Penyedia jasa aktif" },
+    { value: completedOrders, suffix: "+", label: "Pesanan selesai" },
+    { value: ratingAvg, decimals: 1, suffix: "/5", label: "Rating rata-rata" },
+    { value: cityCount, suffix: "+", label: "Kota di Indonesia" },
+  ];
+
+  return (
+    <div>
+      <Hero
+        categories={categories}
+        providers={heroProviders}
+        providerCount={providerCount}
+        completedOrders={completedOrders}
+        ratingAvg={ratingAvg}
+        cityCount={cityCount}
+      />
+
+      {/* ===== KATEGORI POPULER ===== */}
+      <section className="mx-auto max-w-7xl px-4 py-20 md:py-24">
+        <Reveal>
+          <div className="mb-10 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
+                Jelajahi
+              </p>
+              <h2 className="mt-2 text-4xl font-bold tracking-tight">
+                Kategori populer
+              </h2>
+            </div>
+            <Link
+              href="/services"
+              className="group hidden items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary-strong sm:flex"
+            >
+              Lihat semua
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </Reveal>
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {categories.map((cat, i) => {
+            const Icon = getCategoryIcon(cat.slug);
+            return (
+              <Reveal key={cat.id} delay={i * 0.06}>
+                <Link
+                  href={`/services?category=${cat.id}`}
+                  className="group relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-lg"
+                >
+                  <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/0 blur-2xl transition-colors duration-500 group-hover:bg-primary/15" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary-strong transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-glow">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold leading-tight">
+                      {cat.name}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Mulai dari Rp 50rb
+                    </div>
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===== JASA TERBARU ===== */}
+      <section className="border-y border-border bg-card/50">
+        <div className="mx-auto max-w-7xl px-4 py-20 md:py-24">
+          <Reveal>
+            <div className="mb-10 flex items-end justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
+                  Terbaru
+                </p>
+                <h2 className="mt-2 text-4xl font-bold tracking-tight">
+                  Jasa yang sedang ramai
+                </h2>
+              </div>
+              <Link
+                href="/services"
+                className="group hidden items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary-strong sm:flex"
+              >
+                Jelajahi semua
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </Reveal>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service, i) => (
+              <Reveal key={service.id} delay={(i % 3) * 0.08}>
+                <ServiceTile service={service} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CARA KERJA (4 STEPS) ===== */}
+      <section className="mx-auto max-w-7xl px-4 py-20 md:py-24">
+        <Reveal>
+          <div className="mb-12 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
+              Cara kerja
+            </p>
+            <h2 className="mt-2 text-4xl font-bold tracking-tight">
+              Dari cari jasa sampai beres, semudah itu
+            </h2>
+          </div>
+        </Reveal>
+
+        <div className="grid gap-8 md:grid-cols-4">
+          {[
+            {
+              icon: Search,
+              step: "01",
+              title: "Cari & bandingkan",
+              desc: "Jelajahi ribuan jasa di sekitar Anda. Bandingkan harga, rating, dan ulasan asli dari pelanggan sebelumnya.",
+            },
+            {
+              icon: Users,
+              step: "02",
+              title: "Pilih penyedia",
+              desc: "Pilih penyedia jasa yang terpercaya. Baca profil, lihat portofolio, dan chat langsung untuk klarifikasi.",
+            },
+            {
+              icon: CreditCard,
+              step: "03",
+              title: "Booking & bayar",
+              desc: "Konfirmasi pesanan, tambahkan catatan khusus, lalu bayar dengan aman melalui metode pilihan Anda.",
+            },
+            {
+              icon: Truck,
+              step: "04",
+              title: "Jasa datang",
+              desc: "Penyedia datang ke lokasi, selesaikan pekerjaan, dan beri rating serta ulasan setelahnya.",
+            },
+          ].map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <Reveal key={s.step} delay={i * 0.1}>
+                <div className="group relative rounded-3xl border border-border bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-card-lg">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary-strong">
+                    <Icon className="h-7 w-7" />
+                  </div>
+
+                  <span className="font-serif text-6xl font-black text-primary-strong/10">
+                    0{s.step}
+                  </span>
+
+                  <h3 className="mt-6 text-2xl font-bold">{s.title}</h3>
+                  <p className="mt-4 leading-relaxed text-muted-foreground">
+                    {s.desc}
+                  </p>
+
+                  <div className="mt-8 flex items-center gap-2 text-xs font-medium text-primary-strong">
+                    <div className="h-px flex-1 bg-border" />
+                    Langkah berikutnya
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===== STATISTIK ===== */}
+      <section className="relative overflow-hidden border-y border-border bg-background">
+        <div className="absolute inset-0 bg-grid" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
+        <div className="relative mx-auto grid max-w-7xl grid-cols-2 gap-10 px-4 py-16 md:grid-cols-4 md:py-20">
+          {stats.map((s, i) => (
+            <Reveal key={s.label} delay={i * 0.08}>
+              <div className="text-center">
+                <div className="text-5xl font-extrabold tracking-tight text-primary-strong">
+                  <Counter
+                    value={s.value}
+                    decimals={s.decimals ?? 0}
+                    suffix={s.suffix}
+                  />
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== CTA ===== */}
+      <section className="mx-auto max-w-7xl px-4 py-20">
+        <Reveal>
+          <div className="relative overflow-hidden rounded-3xl bg-primary p-10 text-primary-foreground md:p-16">
+            <div className="absolute inset-0 bg-noise opacity-40" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-foreground/20 blur-3xl" />
+            <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-lg">
+                <p className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Untuk penyedia jasa
+                </p>
+                <h2 className="mt-3 text-4xl font-extrabold tracking-tight">
+                  Punya keahlian? Ubah jadi penghasilan.
+                </h2>
+                <p className="mt-3 text-sm opacity-85 md:text-base">
+                  Buka jasa gratis, terima pesanan dari pelanggan di sekitar
+                  Anda, dan bangun reputasi lewat rating.
+                </p>
+              </div>
+              {/* Tombol utama memakai bg-background + text-primary-strong
+                  (5.0:1). Tidak boleh bg-primary-foreground: di light mode
+                  token itu gelap, jadi teks oranye di atasnya tak terbaca.
+                  Tautan /chat dihapus — rutenya tidak ada (404). */}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/register"
+                  className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-background px-7 py-3.5 text-sm font-bold text-primary-strong transition-transform duration-base hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Mulai Jualan <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+                <Link
+                  href="/services"
+                  className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 px-7 py-3.5 text-sm font-bold transition-colors duration-base hover:bg-primary-foreground/10"
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden /> Cari Jasa
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    </div>
+  );
+}

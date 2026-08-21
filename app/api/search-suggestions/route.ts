@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
+
+export async function GET(request: NextRequest) {
+  const limited = enforceRateLimit(request, "search", RATE_LIMITS.search)
+  if (limited) return limited
+
+  const query = (request.nextUrl.searchParams.get("q") || "").trim()
+
+  if (!query || query.length < 2) {
+    return NextResponse.json({ suggestions: [] })
+  }
+
+  try {
+    const tokens = query.split(/\s+/).filter(Boolean)
+    const suggestions = await prisma.service.findMany({
+      where: {
+        status: "ACTIVE",
+        AND: tokens.map((token) => ({
+          OR: [
+            { title: { contains: token } },
+            { description: { contains: token } },
+          ],
+        })),
+      },
+      select: {
+        title: true,
+        slug: true,
+      },
+      take: 8,
+      orderBy: {
+        title: "asc",
+      },
+    })
+
+    // Deduplicate and format
+    const uniqueSuggestions = Array.from(
+      new Set(suggestions.map(s => s.title))
+    ).slice(0, 6)
+
+    return NextResponse.json({
+      suggestions: uniqueSuggestions.map(title => ({
+        title,
+        slug: suggestions.find(s => s.title === title)?.slug || "",
+      })),
+    })
+  } catch (error) {
+    console.error("Search suggestions error:", error)
+    return NextResponse.json({ suggestions: [] })
+  }
+}

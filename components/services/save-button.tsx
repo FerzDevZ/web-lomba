@@ -1,0 +1,109 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { Heart } from "lucide-react"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+// Tombol simpan jasa (wishlist). Menampilkan status "disimpan" berdasarkan
+// ketersediaan sesi; untuk pengguna yang belum login akan diarahkan ke halaman masuk.
+export function SaveButton({
+  serviceId,
+  size = "lg",
+  variant = "outline",
+  className,
+}: {
+  serviceId: number
+  size?: "default" | "lg" | "icon" | "sm"
+  variant?: "outline" | "ghost" | "default"
+  className?: string
+}) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [saved, setSaved] = useState(false)
+  const [checked, setChecked] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  // Cek status simpan hanya jika user sudah login
+  useEffect(() => {
+    let active = true
+    if (status !== "authenticated") return
+    fetch(`/api/saved?id=${serviceId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data) {
+          setSaved(data.saved)
+          setChecked(true)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [serviceId, status])
+
+  const handleToggle = async () => {
+    if (status !== "authenticated") {
+      router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`)
+      return
+    }
+    if (loading) return
+    setLoading(true)
+    try {
+      const res = await fetch("/api/saved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serviceId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSaved(data.saved)
+        setChecked(true)
+        toast.success(data.saved ? "Jasa disimpan" : "Jasa dihapus dari simpanan", {
+          description: data.saved
+            ? "Temukan di dashboard Anda nanti."
+            : "Jasa dihapus dari daftar simpanan.",
+        })
+      } else {
+        toast.error("Gagal menyimpan", {
+          description: "Terjadi kesalahan. Coba lagi nanti.",
+        })
+      }
+    } catch {
+      toast.error("Gagal menyimpan", {
+        description: "Terjadi kesalahan jaringan.",
+      })
+    }
+    setLoading(false)
+  }
+
+  const isSaved = checked ? saved : false
+
+  return (
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
+      onClick={handleToggle}
+      disabled={loading}
+      aria-pressed={isSaved}
+      aria-label={isSaved ? "Hapus dari simpanan" : "Simpan jasa ini"}
+      className={cn(
+        isSaved &&
+          "border-primary/50 bg-primary/10 text-primary-strong hover:bg-primary/15",
+        className
+      )}
+    >
+      <Heart
+        className={cn(
+          "h-4 w-4 transition-transform",
+          isSaved && "fill-current scale-110"
+        )}
+      />
+      <span>{isSaved ? "Disimpan" : "Simpan"}</span>
+    </Button>
+  )
+}
