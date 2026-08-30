@@ -6,10 +6,10 @@
 - project: weblomba
 - path: /home/firman/weblomba
 - created: 2026-08-30
-- last_updated: 2026-08-30 17:50
-- stack: Next.js 15.5.24 + React 19 + Prisma 5.22 + MongoDB Atlas (ferz/bj80suv ap-southeast-1) + Tailwind 3.4 + NextAuth v5 + TanStack Query 5 + R3F 9.7 + GSAP 3.15 + Zod + bcryptjs + date-fns + recharts + dnd-kit
-- repo: https://github.com/FerzDevZ/web-lomba.git (main, be84816 latest)
-- deploy: Vercel sin1 → https://weblomba-rouge.vercel.app (prod, mwv2ys1zu Ready 2m) + https://weblomba-mwv2ys1zu-ferzdevzs-projects.vercel.app
+- last_updated: 2026-08-30 18:25
+- stack: Next.js 15.5.24 + React 19 + Prisma 5.22 + MongoDB Atlas (ferz/bj80suv ap-southeast-1) + Tailwind 3.4 + NextAuth v5 + TanStack Query 5 + R3F 9.7 + GSAP 3.15 + Zod + bcryptjs + date-fns + recharts + dnd-kit + Playwright Mobile
+- repo: https://github.com/FerzDevZ/web-lomba.git (main, bd5ac91 latest P2)
+- deploy: Vercel sin1 → https://weblomba-rouge.vercel.app (prod, 6yn2jxm8u Ready 2m) + https://weblomba-6yn2jxm8u-ferzdevzs-projects.vercel.app
 - alias lama 404: https://weblomba.vercel.app → NOT_FOUND (bukan project ini, canonical sekarang rouge, env sudah fix)
 - projectId: prj_dIxWAg5O5regeZJmJ8be64ncm9cI / team_M7B2bxaZust55ICCdDABrf01 — Vercel CLI 59.10.0 ferzdevz
 - opencode: opencode2 / programmer

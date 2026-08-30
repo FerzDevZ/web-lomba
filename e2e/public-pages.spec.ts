@@ -81,15 +81,12 @@ test.describe("halaman publik", () => {
     }
   })
 
-  test("rute tak terdaftar diarahkan ke login oleh middleware", async ({
-    page,
-  }) => {
-    // middleware.ts memakai daftar-putih: apa pun di luar PUBLIC_PATHS
-    // diarahkan ke /login sebelum routing Next.js sempat mengembalikan 404.
-    // Ini keputusan sengaja (tidak membocorkan rute mana yang ada), jadi yang
-    // diuji adalah redirect-nya — bukan 404.
+  test("rute tak terdaftar menampilkan 404 (hijack fix)", async ({ page }) => {
+    // Fix P0 middleware hijack: unknown routes tidak lagi redirect ke /login,
+    // biarkan Next render 404 (app/not-found.tsx) — benar untuk SEO & UX.
     await page.goto("/rute-yang-tidak-pernah-ada")
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL("/rute-yang-tidak-pernah-ada")
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/404|tidak ditemukan/i)
   })
 
   test("rute terproteksi mengarahkan ke login", async ({ page }) => {
