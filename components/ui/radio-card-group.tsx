@@ -81,7 +81,7 @@ export function RadioCardGroup<T extends string>({
       aria-label={label}
       onKeyDown={handleKeyDown}
       className={cn(
-        columns === 2 ? "grid grid-cols-2 gap-3" : "space-y-3",
+        columns === 2 ? "grid grid-cols-2 gap-3 auto-rows-fr [&_button]:h-full [&_button]:items-start" : "space-y-3",
         className
       )}
     >

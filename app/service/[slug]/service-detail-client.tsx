@@ -372,12 +372,12 @@ export default function ServiceDetailClient({
           </Link>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="description">Deskripsi</TabsTrigger>
-              <TabsTrigger value="reviews">
+            <TabsList className="grid w-full grid-cols-3 gap-1">
+              <TabsTrigger value="description" className="px-2 text-xs sm:px-3 sm:text-sm whitespace-nowrap">Deskripsi</TabsTrigger>
+              <TabsTrigger value="reviews" className="px-2 text-xs sm:px-3 sm:text-sm whitespace-nowrap">
                 Ulasan ({service.totalReviews})
               </TabsTrigger>
-              <TabsTrigger value="about">Tentang Provider</TabsTrigger>
+              <TabsTrigger value="about" className="px-2 text-xs sm:px-3 sm:text-sm whitespace-nowrap">Tentang Provider</TabsTrigger>
             </TabsList>
 
             {/* TabsContent dirender ulang saat berganti nilai, jadi

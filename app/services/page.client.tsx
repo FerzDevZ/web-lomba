@@ -295,9 +295,9 @@ function CatalogContent() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          {/* Baris chip filter aktif — sticky agar selalu terlihat saat scroll hasil */}
+          {/* Baris chip filter aktif — sticky, tanpa -mx-4 biar nggak overflow di 320 */}
           {activeFilterCount > 0 && data && data.services.length > 0 && (
-            <div className="sticky top-16 z-10 -mx-4 mb-4 flex flex-wrap items-center gap-2 bg-background/80 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:mx-0 lg:px-0">
+            <div className="sticky top-16 z-10 mb-4 flex flex-wrap items-center gap-2 bg-background/80 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:mx-0">
               {category && categories && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary-strong">
                   {categories.find((c) => String(c.id) === category)?.name ?? category}
@@ -438,8 +438,8 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* Action bar mobile: glass */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
+      {/* Action bar mobile: glass + safe-area */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-4">
           <span className="text-sm text-muted-foreground">
             {isLoading ? "Memuat…" : `${data?.total ?? 0} jasa`}

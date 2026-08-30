@@ -174,14 +174,10 @@ export function DashboardShell({
   }, [drawerOpen])
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-muted/30">
-      {/* Sidebar desktop. Navbar global sticky h-16 z-50 berada di atas shell
-          ini, jadi sidebar HARUS offset top-16 — dengan top-0 + h-screen,
-          bagian atas sidebar tertutup navbar dan UserCard di bawah terdorong
-          keluar viewport sehingga tombol Keluar tidak bisa dijangkau.
-          Logo tidak diulang di sini: navbar global sudah menampilkannya. */}
-      <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 flex-col border-r border-border bg-card md:flex">
-        <nav aria-label="Navigasi dashboard" className="flex-1 space-y-1 overflow-y-auto p-3">
+    <div className="flex h-[calc(100dvh-4rem)] overflow-hidden bg-muted/30">
+      {/* Sidebar desktop — dvh biar pas di iOS Safari toolbar dinamis, tidak kepotong 60px */}
+      <aside className="hidden h-[calc(100dvh-4rem)] w-64 shrink-0 flex-col border-r border-border bg-card md:flex sticky top-16 self-start">
+        <nav aria-label="Navigasi dashboard" className="flex-1 space-y-1 overflow-y-auto p-3 [scrollbar-gutter:stable]">
           <p className="px-4 pb-2 pt-3 text-2xs font-bold uppercase tracking-widest text-muted-foreground">
             {ROLE_LABEL[role] ?? role}
           </p>
@@ -191,11 +187,10 @@ export function DashboardShell({
         <UserCard userName={userName} role={role} avatarUrl={avatarUrl} />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Bar nav mobile. Di bawah navbar global (top-16), tanpa mengulang
-            logo — dua logo bertumpuk di layar kecil hanya memakan tinggi.
-            Sebelumnya sidebar tidak punya jalur akses apa pun di mobile. */}
-        <div className="sticky top-16 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-card/90 px-4 backdrop-blur-xl md:hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable]">
+        {/* Bar nav mobile — sticky top-0 di dalam scroll container main (bukan top-16),
+            karena scroll container sudah di bawah navbar (h-[calc(100vh-4rem)]). */}
+        <div className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-card/90 px-4 backdrop-blur-xl md:hidden">
           <span className="truncate text-sm font-semibold text-muted-foreground">
             {ROLE_LABEL[role] ?? role}
           </span>

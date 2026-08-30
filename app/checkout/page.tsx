@@ -396,16 +396,16 @@ function CheckoutContent() {
 
   return (
     <PageShell className="py-10 pb-28 lg:pb-10">
-      <div className="mx-auto mb-6 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-muted">
+      <div className="mx-auto mb-6 h-1.5 w-full max-w-[min(28rem,calc(100vw-32px))] overflow-hidden rounded-full bg-muted">
         <div className="h-full w-1/2 rounded-full bg-primary transition-[width] duration-300 ease-smooth" aria-hidden />
       </div>
       {/* Stepper 2 langkah — nasional: jelas, tidak menipu */}
-      <div className="mb-6 flex items-center justify-center gap-2 text-xs font-medium" aria-label="Langkah checkout">
-        <span className="flex items-center gap-1.5 text-muted-foreground">
+      <div className="mb-6 flex items-center justify-center gap-1.5 text-xs font-medium sm:gap-2" aria-label="Langkah checkout">
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-muted-foreground">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-2xs">1</span> Detail Jasa
         </span>
-        <span className="h-px w-8 bg-border" aria-hidden />
-        <span className="flex items-center gap-1.5 text-primary-strong" aria-current="step">
+        <span className="h-px w-8 max-w-8 flex-1 bg-border" aria-hidden />
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-primary-strong" aria-current="step">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">2</span> Alamat &amp; Bayar
         </span>
       </div>
@@ -620,8 +620,8 @@ function CheckoutContent() {
           </Card>
         </div>
 
-        {/* Action bar mobile — glass */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
+        {/* Action bar mobile — glass + safe-area */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-4">
             <div className="min-w-0">
               <div className="text-2xs uppercase tracking-wide text-muted-foreground">
