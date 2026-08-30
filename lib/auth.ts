@@ -3,10 +3,10 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 
-// In-memory rate limit untuk login per email: 5 attempts per 15 menit.
+// In-memory rate limit untuk login per email: 10 attempts per 15 menit (longgar untuk demo).
 // authorize tidak punya akses ke Request, jadi tidak bisa pakai enforceRateLimit.
 // Map<email, number[]> menyimpan timestamp attempts yang gagal.
-const LOGIN_RATE_LIMIT_MAX = 5
+const LOGIN_RATE_LIMIT_MAX = 10
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
 const loginAttempts = new Map<string, number[]>()
 
