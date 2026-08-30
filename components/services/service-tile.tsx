@@ -49,7 +49,7 @@ export function ServiceTile({
     <Link
       href={`/service/${service.slug}`}
       className={cn(
-        "focus-ring group block overflow-hidden rounded-2xl border border-border bg-card transition-all duration-base hover:-translate-y-1 hover:shadow-card-lg dark:hover:shadow-card-dark dark:hover:border-white/10",
+        "focus-ring group block overflow-hidden rounded-2xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:-translate-y-0.5 hover:shadow-card-lg focus-visible:-translate-y-0.5 focus-visible:shadow-card-lg focus-visible:border-primary/30 dark:hover:shadow-card-dark dark:hover:border-white/10",
         className
       )}
     >
@@ -65,12 +65,12 @@ export function ServiceTile({
             alt={service.title}
             fill
             sizes={sizes}
-            className="object-cover transition-transform duration-slow group-hover:scale-105"
+            className="object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
             unoptimized={service.imageUrl.startsWith("data:")}
           />
         ) : (
           <Icon
-            className="h-16 w-16 text-primary-strong/25 transition-transform duration-slow group-hover:scale-110"
+            className="h-16 w-16 text-primary-strong/25 transition-transform duration-300 ease-smooth group-hover:scale-105"
             aria-hidden
           />
         )}

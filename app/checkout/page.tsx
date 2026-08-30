@@ -375,10 +375,11 @@ function CheckoutContent() {
     .toISOString()
     .split("T")[0]
 
-  const submitButton = (className?: string) => (
+  const submitButton = (className?: string, variant: "primary" | "secondary" = "primary") => (
     <Button
       type="submit"
       size="lg"
+      variant={variant === "secondary" ? "outline" : "default"}
       className={className}
       disabled={submitting || isOwnService}
     >
@@ -396,7 +397,7 @@ function CheckoutContent() {
   return (
     <PageShell className="py-10 pb-28 lg:pb-10">
       <div className="mx-auto mb-6 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-muted">
-        <div className="h-full w-1/2 rounded-full bg-primary transition-all duration-500" aria-hidden />
+        <div className="h-full w-1/2 rounded-full bg-primary transition-[width] duration-300 ease-smooth" aria-hidden />
       </div>
       {/* Stepper 2 langkah — nasional: jelas, tidak menipu */}
       <div className="mb-6 flex items-center justify-center gap-2 text-xs font-medium" aria-label="Langkah checkout">
@@ -489,7 +490,7 @@ function CheckoutContent() {
                 )}
                 <div className="flex flex-wrap gap-1.5">
                   {["Pangkal Pinang, Kepulauan Bangka Belitung", "Tanjung Pinang, Kepulauan Riau", "Denpasar, Bali", "Jayapura, Papua"].map((ex) => (
-                    <button key={ex} type="button" onClick={() => setAddress(ex)} className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
+                    <button key={ex} type="button" onClick={() => setAddress(ex)} className="rounded-lg bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
                       {ex.split(",").pop()?.trim()}
                     </button>
                   ))}
@@ -608,9 +609,8 @@ function CheckoutContent() {
                 </p>
               )}
 
-              {/* Tombol utama disembunyikan di mobile: di layar kecil aksinya
-                  ada di action bar sticky agar tidak jatuh di bawah lipatan. */}
-              {submitButton("hidden w-full lg:flex")}
+              {/* Desktop: secondary — primary ada di bar mobile agar 1 aksi utama (P0) */}
+              {submitButton("hidden w-full lg:flex", "secondary")}
 
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-success" aria-hidden />

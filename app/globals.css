@@ -194,15 +194,15 @@
     background-size: 56px 56px;
   }
 
-  /* Noise halus via data-uri SVG */
+  /* Noise halus via data-uri SVG — opacity diturunkan di hero ke 0.12 */
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
   }
 
-  /* Mask fade ke bawah untuk bagian bawah hero */
+  /* Mask fade ke bawah untuk bagian bawah hero — 80% agar grid tidak cepat hilang */
   .mask-fade-b {
-    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
-    mask-image: linear-gradient(to bottom, black 60%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent);
+    mask-image: linear-gradient(to bottom, black 80%, transparent);
   }
 }
 

@@ -100,12 +100,12 @@ export default async function HomePage() {
         <Reveal>
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
-                Jelajahi
-              </p>
-              <h2 className="mt-2 text-4xl font-bold tracking-tight">
+              <h2 className="text-4xl font-bold tracking-tight">
                 Kategori populer
               </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Temukan keahlian yang paling sering dicari di sekitar Anda.
+              </p>
             </div>
             <Link
               href="/services"
@@ -125,10 +125,10 @@ export default async function HomePage() {
               <Reveal key={cat.id} delay={i * 0.06} className="h-full">
                 <Link
                   href={`/services?category=${cat.id}`}
-                  className="group relative flex h-full min-h-[148px] flex-col items-start justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-lg"
+                  className="group relative flex h-full min-h-[148px] flex-col items-start justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card-lg focus-visible:-translate-y-0.5 focus-visible:border-primary/40 focus-visible:shadow-card-lg"
                 >
-                  <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/0 blur-2xl transition-colors duration-500 group-hover:bg-primary/15" />
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-accent text-muted-foreground transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-glow group-hover:border-primary">
+                  <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/0 blur-2xl transition-colors duration-300 group-hover:bg-primary/10" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-accent text-muted-foreground transition-[background,border-color,color,box-shadow] duration-200 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="mt-auto w-full">
@@ -136,7 +136,7 @@ export default async function HomePage() {
                       {cat.name}
                     </div>
                     <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-2xs font-semibold tabular-nums">{count} jasa</span>
+                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-2xs font-semibold tabular-nums">{count} jasa</span>
                     </div>
                   </div>
                 </Link>
@@ -155,12 +155,12 @@ export default async function HomePage() {
           <Reveal>
             <div className="mb-10 flex items-end justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
-                  Terbaru
-                </p>
-                <h2 className="mt-2 text-4xl font-bold tracking-tight">
+                <h2 className="text-4xl font-bold tracking-tight">
                   Jasa yang sedang ramai
                 </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Pesanan terbaru yang dipercaya tetangga sekitar Anda.
+                </p>
               </div>
               <Link
                 href="/services"
@@ -186,12 +186,12 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-20 md:py-24">
         <Reveal>
           <div className="mb-12 max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary-strong">
-              Cara kerja
-            </p>
-            <h2 className="mt-2 text-4xl font-bold tracking-tight">
+            <h2 className="text-4xl font-bold tracking-tight">
               Dari cari jasa sampai beres, semudah itu
             </h2>
+            <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+              Empat langkah yang dipakai setiap hari — tanpa telepon berantai.
+            </p>
           </div>
         </Reveal>
 
@@ -223,27 +223,28 @@ export default async function HomePage() {
             },
           ].map((s, i) => {
             const Icon = s.icon;
+            const isLast = i === 3;
             return (
               <Reveal key={s.step} delay={i * 0.1}>
-                <div className="group relative rounded-3xl border border-border bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-card-lg">
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary-strong">
-                    <Icon className="h-7 w-7" />
+                <div className="group relative rounded-3xl border border-border bg-card p-8 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:border-primary/30 hover:shadow-card-lg hover:-translate-y-0.5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold tracking-widest text-primary-strong/60">LANGKAH {s.step}</span>
                   </div>
 
-                  <span className="font-serif text-6xl font-black text-primary-strong/10">
-                    0{s.step}
-                  </span>
-
-                  <h3 className="mt-6 text-2xl font-bold">{s.title}</h3>
-                  <p className="mt-4 leading-relaxed text-muted-foreground">
+                  <h3 className="mt-5 text-xl font-bold leading-tight">{s.title}</h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
                     {s.desc}
                   </p>
 
-                  <div className="mt-8 flex items-center gap-2 text-xs font-medium text-primary-strong">
-                    <div className="h-px flex-1 bg-border" />
-                    Langkah berikutnya
-                    <div className="h-px flex-1 bg-border" />
-                  </div>
+                  {!isLast && (
+                    <div className="mt-6 hidden items-center gap-2 text-xs font-medium text-muted-foreground/60 md:flex" aria-hidden>
+                      <div className="h-px flex-1 bg-border" />
+                      <span>→</span>
+                    </div>
+                  )}
                 </div>
               </Reveal>
             );

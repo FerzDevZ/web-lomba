@@ -111,11 +111,10 @@ export function Hero({
       ref={root}
       className="relative overflow-hidden border-b border-border bg-background"
     >
-      {/* Latar: grid + noise + glow oranye */}
-      <div className="absolute inset-0 bg-grid mask-fade-b" />
-      <div className="absolute inset-0 bg-noise opacity-[0.35]" />
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-[140px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[30%] h-[420px] w-[420px] rounded-full bg-secondary/15 blur-[120px]" />
+      {/* Latar: grid + noise + glow — diredam (P0 restraint) */}
+      <div className="absolute inset-0 bg-grid mask-fade-b opacity-60" />
+      <div className="absolute inset-0 bg-noise opacity-[0.12]" />
+      <div className="pointer-events-none absolute -left-32 top-[-10%] h-[420px] w-[420px] rounded-full bg-primary/14 blur-[100px]" />
 
       <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-20 md:py-28 lg:grid-cols-12 lg:items-center">
         {/* Kiri — copy */}
@@ -132,7 +131,7 @@ export function Hero({
               menggantikan tiga breakpoint + nilai arbitrary 2.6rem. */}
           <h1 data-hero-fade className="text-6xl font-extrabold tracking-tight">
             Jasa terbaik dari{" "}
-            <span className="font-serif italic text-primary-strong">
+            <span className="font-serif font-bold text-primary-strong underline decoration-primary/20 underline-offset-[6px] decoration-[3px]">
               orang terpercaya
             </span>{" "}
             di sekitarmu

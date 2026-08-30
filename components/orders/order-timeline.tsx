@@ -30,17 +30,15 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
               <li key={step} className="flex flex-1 items-center last:flex-none">
                 <div className="flex flex-col items-center">
                   <div className="relative flex flex-col items-center">
-                    {/* Pulse ring di step yang sedang aktif */}
-                    {status === step && !cancelled && (
-                      <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-primary/25" />
-                    )}
                     <div
                       aria-current={status === step ? "step" : undefined}
-                      className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-base ${
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
                         done
                           ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-card text-muted-foreground"
-                      } ${status === step && !cancelled ? "shadow-glow" : ""}`}
+                          : status === step && !cancelled
+                            ? "border-primary bg-primary/10 text-primary-strong"
+                            : "border-border bg-card text-muted-foreground"
+                      } ${status === step && !cancelled ? "ring-2 ring-primary/20" : ""}`}
                     >
                       {done ? (
                         <CheckCircle2 className="h-4 w-4" aria-hidden />

@@ -131,7 +131,7 @@ export function CatalogFilterPanel({
               key={prov}
               type="button"
               onClick={() => onChange({ location: prov })}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${location === prov ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${location === prov ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
             >
               {prov.split(" ").slice(-1)[0]}
             </button>
@@ -183,7 +183,7 @@ export function CatalogFilterPanel({
               key={p.label}
               type="button"
               onClick={() => onChange({ minPrice: p.min, maxPrice: p.max })}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${minPrice===p.min && maxPrice===p.max ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${minPrice===p.min && maxPrice===p.max ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
             >
               {p.label}
             </button>

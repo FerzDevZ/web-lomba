@@ -13,11 +13,11 @@ export default async function Navbar() {
   const session = await auth()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         {/* Logo */}
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient text-base font-extrabold text-primary-foreground shadow-glow transition-transform duration-base group-hover:rotate-6 group-hover:scale-105">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gradient text-base font-extrabold text-primary-foreground shadow-glow transition-transform duration-200 ease-smooth group-hover:rotate-3 group-hover:scale-105">
             S
           </span>
           <span className="hidden text-lg font-bold tracking-tight sm:block">
