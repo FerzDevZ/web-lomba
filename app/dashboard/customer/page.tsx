@@ -8,6 +8,8 @@ import { SavedServices } from "@/components/dashboard/saved-services"
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
 import { PageHeader } from "@/components/layout/page-shell"
 
+export const dynamic = "force-dynamic"
+
 export default function CustomerDashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()

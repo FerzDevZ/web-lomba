@@ -100,6 +100,7 @@ export function CustomerDashboard() {
               value={formatIDR(totalSpent)}
               icon={Wallet}
               tone="warning"
+              className="[&_p]:break-words"
             />
           </>
         )}

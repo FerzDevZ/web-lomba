@@ -36,7 +36,16 @@ export function StatCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-1 truncate text-2xl font-bold tabular-nums">
+            <p
+              className="mt-1 truncate text-xl font-bold tabular-nums sm:text-2xl"
+              title={
+                typeof value === "string"
+                  ? value
+                  : typeof value === "number"
+                    ? String(value)
+                    : undefined
+              }
+            >
               {typeof value === "number" ? <Counter value={value} /> : value}
             </p>
             {hint && (

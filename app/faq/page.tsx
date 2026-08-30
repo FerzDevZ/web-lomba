@@ -191,8 +191,10 @@ export default function FAQPage() {
                   key={i}
                   className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/30"
                 >
-                  <summary className="focus-ring flex cursor-pointer items-center justify-between gap-4 rounded font-semibold marker:content-none">
-                    {item.q}
+                  <summary className="focus-ring flex cursor-pointer items-center justify-between gap-3 rounded font-semibold marker:content-none">
+                    <span className="min-w-0 flex-1 break-words text-left [overflow-wrap:anywhere]">
+                      {item.q}
+                    </span>
                     <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
                   </summary>
                   <p className="mt-3 leading-relaxed text-muted-foreground">

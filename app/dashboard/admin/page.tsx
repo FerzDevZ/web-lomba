@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 md:grid-cols-3 xl:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 md:grid-cols-3 xl:grid-cols-5">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-32 rounded-2xl" />
@@ -195,7 +195,7 @@ export default function AdminDashboardPage() {
                         <Icon className="h-4 w-4" aria-hidden />
                       </div>
                     </div>
-                    <div className="mt-2 text-2xl font-extrabold tabular-nums tracking-tight">
+                    <div className="mt-2 text-lg font-extrabold tabular-nums tracking-tight sm:text-2xl">
                       {kpi.money ? (
                         <Counter value={kpi.value} prefix="Rp" suffix="" />
                       ) : (
