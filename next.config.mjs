@@ -5,7 +5,7 @@ const nextConfig = {
     optimizeCss: true,
     // framer-motion dan @react-three/drei sudah dilepas dari dependencies —
     // menyebut paket yang tidak terpasang di sini tidak berefek apa pun.
-    optimizePackageImports: ['lucide-react', 'gsap', '@react-three/fiber', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'gsap', '@react-three/fiber', 'recharts', 'three'],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

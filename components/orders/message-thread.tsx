@@ -36,8 +36,11 @@ export function MessageThread({
       if (!res.ok) throw new Error("Gagal memuat pesan")
       return res.json()
     },
-    refetchInterval: 8000,
+    refetchInterval: 15000,
     refetchIntervalInBackground: false,
+    staleTime: 5000,
+    gcTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 
   React.useEffect(() => {

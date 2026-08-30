@@ -32,11 +32,11 @@ export function NotificationBell() {
 
   React.useEffect(() => {
     load()
-    // Polling ringan setiap 30 detik, jeda saat tab hidden (P2)
+    // Polling ringan setiap 60 detik, jeda saat tab hidden (P1 perf)
     const interval = setInterval(() => {
       if (document.hidden) return
       load()
-    }, 30_000)
+    }, 60_000)
     const onVis = () => { if (!document.hidden) load() }
     document.addEventListener("visibilitychange", onVis)
     return () => {

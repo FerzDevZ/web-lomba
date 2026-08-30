@@ -16,13 +16,8 @@ const PUBLIC_PATHS = [
   "/api/categories",
   "/sitemap.xml",
   "/robots.txt",
-  // Route metadata Next.js (file-based): tidak punya ekstensi di URL sehingga
-  // tidak tertangkap pengecualian `.*\..*` pada matcher di bawah.
   "/icon",
-  "/apple-icon",
   "/opengraph-image",
-  "/twitter-image",
-  "/manifest.webmanifest",
 ]
 
 const KNOWN_PREFIXES = [

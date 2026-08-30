@@ -94,10 +94,10 @@ export async function POST(
   })
   res.cookies.set(cookieName, token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: cookieName.startsWith("__Secure-"),
     path: "/",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 15 * 60,
   })
 
   // Hapus nama cookie lawan agar tidak ada sesi ganda yang tertinggal
@@ -106,7 +106,7 @@ export async function POST(
     : "__Secure-authjs.session-token"
   res.cookies.set(otherName, "", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: otherName.startsWith("__Secure-"),
     path: "/",
     maxAge: 0,

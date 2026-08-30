@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const providers = await prisma.user.findMany({
-    where: { role: "PROVIDER" },
+    where: { role: "PROVIDER", services: { some: { status: "ACTIVE" } } },
     select: { id: true },
   })
 

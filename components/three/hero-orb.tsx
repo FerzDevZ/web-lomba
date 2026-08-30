@@ -20,7 +20,7 @@ import * as THREE from "three";
  *    controls, jadi tidak ada perebutan gesture.
  */
 
-const PARTICLE_COUNT = 1400;
+const PARTICLE_COUNT = 600;
 
 function ParticleSphere() {
   const points = useRef<THREE.Points>(null);
@@ -92,8 +92,8 @@ export default function HeroOrb() {
       // mencuri gesture scroll/tap dari konten di sekitarnya.
       className="pointer-events-none"
       style={{ width: "100%", height: "100%" }}
-      gl={{ antialias: true, alpha: true, powerPreference: "default" }}
-      dpr={[1, 1.75]}
+      gl={{ antialias: false, alpha: true, powerPreference: "default" }}
+      dpr={[1, 1.25]}
     >
       <ParticleSphere />
     </Canvas>
