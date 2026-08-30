@@ -51,6 +51,10 @@ export async function login(
   // { name: "Masuk" }) sama-sama ambigu di level page.
   const form = page.locator("form").filter({ has: page.locator("input#email") })
 
+  // Tunggu form benar-benar visible (Suspense fallback bisa muncul dulu)
+  await expect(form.locator("input#email")).toBeVisible({ timeout: 15_000 })
+  await expect(form.locator("input#password")).toBeVisible()
+
   await form.locator("input#email").fill(email)
   await form.locator("input#password").fill(password)
   await form.getByRole("button", { name: "Masuk" }).click()

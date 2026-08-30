@@ -424,7 +424,7 @@ tests/ 7 files 108 tests | e2e/ order-lifecycle + public-pages | vercel.json (si
 
 <h2>16 &nbsp; Deployment</h2>
 <h4>Vercel — Production Live</h4>
-<p><b>URL:</b> <span class="mono">https://weblomba-rouge.vercel.app</span> (primary) + <span class="mono">https://weblomba.vercel.app</span>. <b>Project:</b> <span class="mono">weblomba (prj_dIxWAg5O5regeZJmJ8be64ncm9cI)</span>, org <span class="mono">ferzdevzs-projects</span>, region <span class="mono">sin1</span>.</p>
+<p><b>URL:</b> <span class="mono">https://weblomba-rouge.vercel.app</span>. <b>Project:</b> <span class="mono">weblomba (prj_dIxWAg5O5regeZJmJ8be64ncm9cI)</span>, org <span class="mono">ferzdevzs-projects</span>, region <span class="mono">sin1</span>.</p>
 <pre>Build: npm run vercel-build = node scripts/vercel-prepare.js && prisma generate && next build
 # vercel-prepare.js: deteksi DATABASE_URL
 #  - mongodb+srv:// → copy prisma/schema.mongo.prisma → prisma/schema.prisma
@@ -504,8 +504,8 @@ npx playwright test          # e2e</pre>
   <tr><td><span class="mono">AUTH_SECRET</span></td><td>Ya</td><td><span class="mono">openssl rand -base64 32</span></td><td>NextAuth v5, 32 byte</td></tr>
   <tr><td><span class="mono">NEXTAUTH_SECRET</span></td><td>Ya</td><td><span class="mono">sama dengan AUTH_SECRET</span></td><td>Alias (kompat)</td></tr>
   <tr><td><span class="mono">AUTH_TRUST_HOST</span></td><td>Ya</td><td><span class="mono">true</span></td><td>Vercel proxy</td></tr>
-  <tr><td><span class="mono">AUTH_URL / NEXTAUTH_URL</span></td><td>Ya</td><td><span class="mono">https://weblomba.vercel.app</span></td><td>Canonical URL</td></tr>
-  <tr><td><span class="mono">NEXT_PUBLIC_SITE_URL</span></td><td>Ya</td><td><span class="mono">https://weblomba.vercel.app</span></td><td>Untuk sitemap & OG</td></tr>
+  <tr><td><span class="mono">AUTH_URL / NEXTAUTH_URL</span></td><td>Ya</td><td><span class="mono">https://weblomba-rouge.vercel.app</span></td><td>Canonical URL</td></tr>
+  <tr><td><span class="mono">NEXT_PUBLIC_SITE_URL</span></td><td>Ya</td><td><span class="mono">https://weblomba-rouge.vercel.app</span></td><td>Untuk sitemap & OG</td></tr>
 </table>
 
 <h4>D. Perintah Penting</h4>
@@ -520,7 +520,7 @@ npx prisma migrate deploy              # SQL (SQLite/Postgres)
 
 <h4>E. Link Produksi</h4>
 <ul>
-  <li>Live: <span class="mono">https://weblomba-rouge.vercel.app</span> (200 OK, 170kB), <span class="mono">https://weblomba.vercel.app</span></li>
+  <li>Live: <span class="mono">https://weblomba-rouge.vercel.app</span> (200 OK, 170kB)</li>
   <li>API: <span class="mono">/api/services</span> (200, 12/page), <span class="mono">/api/categories</span> (200)</li>
   <li>Repo: <span class="mono">github.com/FerzDevZ/web-lomba</span> branch <span class="mono">main</span> (commit <span class="mono">5fe8fd6 fix: upgrade Next.js 15.5.24</span>)</li>
   <li>Atlas: <span class="mono">ferz.bj80suv.mongodb.net</span> — Network Access 0.0.0.0/0 Active</li>

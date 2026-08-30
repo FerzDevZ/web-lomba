@@ -137,7 +137,7 @@ Berkas `.env` tidak di-commit — ia berisi rahasia. Buat sendiri berdasarkan ta
 | `NEXTAUTH_URL` | Dev | URL callback OAuth. Di produksi, gunakan `NEXT_PUBLIC_SITE_URL`. |
 | `NEXT_PUBLIC_SITE_URL` | Produksi | URL kanonik publik, dipakai metadata, Open Graph, JSON-LD, sitemap, dan robots.txt. |
 
-Tanpa `NEXT_PUBLIC_SITE_URL` di produksi, seluruh metadata menunjuk `http://localhost:3000` dan crawler tidak bisa mengambil preview apa pun. Aplikasi mencetak peringatan ke log bila ini terjadi — akibatnya tidak terlihat di UI, jadi jangan mengandalkan tampilan untuk mendeteksinya.
+**Penting:** Di Vercel, setel `NEXT_PUBLIC_SITE_URL` ke `https://weblomba-rouge.vercel.app` untuk produksi dan preview. Tanpa variabel ini, seluruh metadata (Open Graph, JSON-LD, sitemap, robots.txt) menunjuk `http://localhost:3000` dan crawler tidak bisa mengambil preview. Aplikasi mencetak peringatan ke log bila ini terjadi — akibatnya tidak terlihat di UI, jadi jangan mengandalkan tampilan untuk mendeteksinya. Variabel ini di-Vercel disetel sebagai sensitive di environment vars prod+preview, bukan di `.env` (karena `.env` gitignored).
 
 ---
 

@@ -48,9 +48,10 @@ describe("ID coercion utilities", () => {
       expect(Number.isFinite(Number(id))).toBe(false)
     })
 
-    it("rejects empty string", () => {
+    it("empty string yields 0 (finite but rejected by toPrismaId)", () => {
       const id = ""
-      expect(Number.isFinite(Number(id))).toBe(false)
+      // Number("") === 0, which IS finite — but toPrismaId rejects via str.trim() check
+      expect(Number.isFinite(Number(id))).toBe(true)
     })
 
     it("rejects float string", () => {
