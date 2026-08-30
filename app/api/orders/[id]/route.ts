@@ -37,8 +37,11 @@ export async function GET(
   if (limited) return limited
 
   const { id } = await params
-  const orderId = toPrismaId(id) as unknown as number & string
   if (!id || String(id).trim() === "") {
+    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+  }
+  const orderId = toPrismaId(String(id).trim()) as unknown as number & string
+  if (!/^[0-9a-f]{24}$|^\d+$/.test(String(orderId))) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
@@ -82,8 +85,11 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const orderId = toPrismaId(id) as unknown as number & string
   if (!id || String(id).trim() === "") {
+    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+  }
+  const orderId = toPrismaId(String(id).trim()) as unknown as number & string
+  if (!/^[0-9a-f]{24}$|^\d+$/.test(String(orderId))) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
@@ -143,15 +149,23 @@ export async function PATCH(
     }
 
     // Update + agregat dalam transaksi untuk mencegah race (P0-3)
+    // Menggunakan updateMany dengan where status:current untuk optimistic locking; jika count 0 berarti race.
     const updated = await prisma.$transaction(async (tx) => {
       // @ts-ignore - handle string|number id for mongo/sqlite
-      const ord = await tx.order.update({
-        where: { id: orderId },
+      const res = await (tx.order as unknown as { updateMany: (args: unknown) => Promise<{ count: number }> }).updateMany({
+        where: { id: orderId, status: current },
         data:
           status === "COMPLETED"
             ? { status, completedAt: new Date() }
             : { status },
       })
+      if (res.count === 0) {
+        throw Object.assign(new Error("Conflict: status sudah berubah"), { code: "CONFLICT" })
+      }
+      const ord = await tx.order.findUnique({
+        where: { id: orderId } as unknown as { id: string | number } & { id: string },
+      })
+      if (!ord) throw new Error("Pesanan tidak ditemukan setelah update")
       if (status === "COMPLETED") {
         const service = await tx.service.findUnique({
           where: { id: ord.serviceId },
@@ -180,6 +194,12 @@ export async function PATCH(
       return NextResponse.json(
         { error: error.errors[0]?.message ?? "Data tidak valid" },
         { status: 400 }
+      )
+    }
+    if ((error as unknown as { code?: string })?.code === "CONFLICT") {
+      return NextResponse.json(
+        { error: "Conflict: status pesanan sudah berubah, silakan muat ulang" },
+        { status: 409 }
       )
     }
     return NextResponse.json(

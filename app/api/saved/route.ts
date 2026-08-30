@@ -9,7 +9,7 @@ import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 export const dynamic = "force-dynamic"
 
 const toggleSchema = z.object({
-  serviceId: z.coerce.number().int().positive(),
+  serviceId: z.string().min(1).refine((v) => /^[0-9a-fA-F]{24}$/.test(v) || /^\d+$/.test(v), "serviceId tidak valid"),
 })
 
 // Daftar jasa yang disimpan oleh user yang sedang login.
@@ -78,7 +78,8 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { serviceId } = toggleSchema.parse(body)
+    const parsed = toggleSchema.parse(body)
+    const serviceId = toPrismaId(parsed.serviceId) as unknown as number & string
 
     const service = await prisma.service.findUnique({
       where: { id: serviceId } as unknown as { id: string | number } & { id: string },

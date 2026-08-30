@@ -10,7 +10,7 @@ import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 export const dynamic = "force-dynamic"
 
 const reviewSchema = z.object({
-  orderId: z.coerce.number().int().positive(),
+  orderId: z.string().min(1).refine((v) => /^[0-9a-fA-F]{24}$/.test(v) || /^\d+$/.test(v), "orderId tidak valid"),
   rating: z.coerce.number().int().min(1).max(5),
   comment: z.string().max(500).optional().nullable(),
 })
@@ -33,8 +33,9 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validated = reviewSchema.parse(body)
 
+    const orderId = toPrismaId(validated.orderId) as string & number
     const order = await prisma.order.findUnique({
-      where: { id: validated.orderId },
+      where: { id: orderId },
       include: { reviews: true },
     })
 

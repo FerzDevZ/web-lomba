@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GripVertical, Inbox, Loader2 } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
+import { sameId } from "@/lib/ids"
 import {
   canTransition,
   isOrderStatus,
@@ -173,7 +174,7 @@ function Column({
   col: { key: OrderStatus; dot: string }
   items: ProviderOrder[]
   isLoading: boolean
-  busyId?: number
+  busyId?: string | number
   onTransition: (order: ProviderOrder, next: OrderStatus) => void
   activeStatus?: OrderStatus | null
 }) {
@@ -232,7 +233,7 @@ function Column({
             <DraggableCard
               key={order.id}
               order={order}
-              busy={busyId === order.id}
+              busy={busyId !== undefined && sameId(busyId, order.id)}
               onTransition={onTransition}
             />
           ))
@@ -308,7 +309,7 @@ export function OrderKanban() {
     : undefined
 
   const moveOrder = (orderId: string | number, next: OrderStatus) => {
-    const order = (orders ?? []).find((o) => o.id === orderId)
+    const order = (orders ?? []).find((o) => sameId(o.id, orderId))
     if (!order || !isOrderStatus(order.status)) return
     if (order.status === next) return
     if (!canTransition(order.status, next)) {
@@ -324,7 +325,7 @@ export function OrderKanban() {
     ])
     const prevStatus = order.status as OrderStatus
     queryClient.setQueryData<ProviderOrder[]>(["provider-orders"], (old) =>
-      old?.map((o) => (o.id === orderId ? { ...o, status: next } : o))
+      old?.map((o) => (sameId(o.id, orderId) ? { ...o, status: next } : o))
     )
     // Haptic
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
@@ -342,7 +343,7 @@ export function OrderKanban() {
               label: "Urungkan",
               onClick: () => {
                 queryClient.setQueryData<ProviderOrder[]>(["provider-orders"], (old) =>
-                  old?.map((o) => (o.id === orderId ? { ...o, status: prevStatus } : o))
+                  old?.map((o) => (sameId(o.id, orderId) ? { ...o, status: prevStatus } : o))
                 )
                 statusMutation.mutate({ orderId, status: prevStatus })
               },
@@ -365,7 +366,7 @@ export function OrderKanban() {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveOrder(
-      (orders ?? []).find((o) => o.id === Number(event.active.id)) ?? null
+      (orders ?? []).find((o) => sameId(o.id, String(event.active.id))) ?? null
     )
   }
 
@@ -373,7 +374,7 @@ export function OrderKanban() {
     setActiveOrder(null)
     const { active, over } = event
     if (!over) return
-    const orderId = Number(active.id)
+    const orderId = String(active.id)
     const target = over.id as OrderStatus
     moveOrder(orderId, target)
   }

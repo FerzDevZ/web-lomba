@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { toPrismaId } from "@/lib/ids"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 
 export const dynamic = "force-dynamic"
@@ -17,8 +18,11 @@ export async function GET(
   if (limited) return limited
 
   const { id } = await params
-  const serviceId = parseInt(id, 10)
-  if (!Number.isFinite(serviceId)) {
+  if (!id || String(id).trim() === "") {
+    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+  }
+  const serviceId = toPrismaId(String(id).trim()) as unknown as number & string
+  if (!String(serviceId).trim() || !/^[0-9a-f]{24}$|^\d+$/.test(String(serviceId))) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 

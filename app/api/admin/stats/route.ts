@@ -112,38 +112,53 @@ export async function GET(request: Request) {
     if (entry) entry.count++
   }
 
-  // Pendapatan per kategori (semua completed)
-  const completed = await prisma.order.findMany({
+  // Pendapatan per kategori & provider — aggregasi di DB (groupBy serviceId)
+  // Sebelumnya: findMany semua COMPLETED + loop JS (P0 perf). Sekarang:
+  // 1) groupBy serviceId di DB untuk _sum totalPrice & _count
+  // 2) fetch services terkait sekali (unique serviceIds) untuk mapping kategori/provider
+  // 3) agregasi kategori/provider di JS tapi hanya sebanyak unique services, bukan ribuan orders
+  const completedByService = await prisma.order.groupBy({
+    by: ["serviceId"],
     where: { status: "COMPLETED" },
-    select: {
-      totalPrice: true,
-      service: {
-        select: {
-          category: { select: { name: true } },
-          provider: { select: { id: true, name: true } },
-        },
-      },
-    },
+    _sum: { totalPrice: true },
+    _count: { _all: true },
   })
 
   const categoryRevenue = new Map<string, number>()
   const providerStats = new Map<
-    number,
+    string | number,
     { name: string; revenue: number; orders: number }
   >()
-  for (const o of completed) {
-    const cat = o.service.category.name
-    categoryRevenue.set(cat, (categoryRevenue.get(cat) ?? 0) + o.totalPrice)
+  if (completedByService.length > 0) {
+    const serviceIds = completedByService.map((g) => g.serviceId)
+    const servicesForAgg = await prisma.service.findMany({
+      where: { id: { in: serviceIds } },
+      select: {
+        id: true,
+        category: { select: { name: true } },
+        provider: { select: { id: true, name: true } },
+      },
+    })
+    const serviceMap = new Map(
+      servicesForAgg.map((s) => [String(s.id), s])
+    )
+    for (const g of completedByService) {
+      const svc = serviceMap.get(String(g.serviceId))
+      if (!svc) continue
+      const revenue = g._sum.totalPrice ?? 0
+      const cat = svc.category.name
+      categoryRevenue.set(cat, (categoryRevenue.get(cat) ?? 0) + revenue)
 
-    const pid = o.service.provider.id
-    const prev = providerStats.get(pid) ?? {
-      name: o.service.provider.name ?? "Provider",
-      revenue: 0,
-      orders: 0,
+      const pid = svc.provider.id as unknown as string | number
+      const prev = providerStats.get(pid) ?? {
+        name: svc.provider.name ?? "Provider",
+        revenue: 0,
+        orders: 0,
+      }
+      prev.revenue += revenue
+      prev.orders += g._count._all
+      providerStats.set(pid, prev)
     }
-    prev.revenue += o.totalPrice
-    prev.orders++
-    providerStats.set(pid, prev)
   }
 
   const statusBreakdown = {

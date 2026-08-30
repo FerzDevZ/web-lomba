@@ -90,14 +90,20 @@ export function consume(key: string, rule: RateLimitRule): RateLimitResult {
 
 // Identitas pemanggil: utamakan user id (lebih adil di belakang NAT/CGNAT),
 // jatuh ke IP dari header proxy bila anonim.
+// Mitigasi spoof x-forwarded-for: trust hanya header yang diset infrastruktur.
+// Priority: x-vercel-forwarded-for (Vercel, trusted) > x-real-ip (proxy) > x-forwarded-for (user spoofable, last) > cf-connecting-ip
 export function clientKey(request: Request, userId?: string | number | null) {
   if (userId != null) return `u:${userId}`
 
+  const vercelForwarded = request.headers.get("x-vercel-forwarded-for")
+  const realIp = request.headers.get("x-real-ip")
   const forwarded = request.headers.get("x-forwarded-for")
+  const cfIp = request.headers.get("cf-connecting-ip")
   const ip =
+    vercelForwarded?.split(",")[0]?.trim() ||
+    realIp?.split(",")[0]?.trim() ||
     forwarded?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    request.headers.get("cf-connecting-ip") ||
+    cfIp?.trim() ||
     "unknown"
 
   return `ip:${ip}`

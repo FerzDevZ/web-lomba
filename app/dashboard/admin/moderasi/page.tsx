@@ -130,10 +130,10 @@ export default function ModerasiPage() {
                 <div className="flex shrink-0 items-center gap-2">
                   <Button size="sm" variant="outline" asChild>
                     <Link
-                      href={`/service/${s.slug}`}
+                      href={`/service/${s.slug}?preview=1`}
                       target="_blank"
                       rel="noopener"
-                      aria-label={`Pratinjau ${s.title} di tab baru`}
+                      aria-label={`Pratinjau ${s.title} di tab baru (draft)`}
                     >
                       <Eye aria-hidden /> Lihat
                     </Link>

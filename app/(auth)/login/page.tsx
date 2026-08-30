@@ -16,10 +16,35 @@ import {
 } from "@/components/ui/card"
 import { AuthFormSkeleton } from "@/components/layout/auth-form-skeleton"
 
+function getSafeCallbackUrl(raw: string | null): string {
+  const fallback = "/dashboard"
+  if (!raw) return fallback
+  // block protocol-relative URLs
+  if (raw.startsWith("//")) return fallback
+  // absolute URL: only allow same-origin (mitigasi open-redirect)
+  if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("http")) {
+    try {
+      if (typeof window !== "undefined") {
+        const url = new URL(raw, window.location.origin)
+        if (url.origin !== window.location.origin) return fallback
+        return url.pathname + url.search + url.hash || fallback
+      }
+      // SSR: tolak semua absolute URL karena tidak bisa verifikasi origin
+      return fallback
+    } catch {
+      return fallback
+    }
+  }
+  // relative URL must start with /
+  if (!raw.startsWith("/")) return fallback
+  return raw
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const callbackUrl = getSafeCallbackUrl(rawCallbackUrl)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -46,7 +71,8 @@ function LoginForm() {
 
     // NextAuth dengan redirect:false kadang tidak set cookie untuk router.push (RSC cache).
     // Paksa hard navigation agar middleware baca cookie baru — hindari muter terus.
-    const dest = result?.url ?? callbackUrl
+    // Validasi open-redirect: hanya izinkan same-origin
+    const dest = getSafeCallbackUrl(result?.url ?? callbackUrl)
     window.location.assign(dest)
   }
 

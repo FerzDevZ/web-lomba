@@ -37,14 +37,16 @@ export async function GET(request: Request) {
     where.slug = slug
   }
   if (category) {
-    const categoryId = toPrismaId(category) as unknown as number & string
-    if (Number.isFinite(categoryId)) {
-      where.categoryId = categoryId
+    const cid = String(category).trim()
+    if (/^[0-9a-fA-F]{24}$/.test(cid) || /^\d+$/.test(cid)) {
+      where.categoryId = toPrismaId(cid) as unknown as number & string
     }
   }
-  // Pencarian multi-kata: setiap kata harus cocok di judul / deskripsi / nama provider
+  // Pencarian multi-kata: escape regex, limit, anti-ReDoS
   if (search) {
-    const tokens = search.split(/\s+/).filter(Boolean)
+    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const raw = search.slice(0, 50)
+    const tokens = raw.split(/\s+/).filter(Boolean).slice(0, 5).map((t) => escapeRegex(t.slice(0, 30))).filter(Boolean)
     if (tokens.length > 0) {
       where.AND = tokens.map((token) => ({
         OR: [
@@ -108,11 +110,22 @@ const createServiceSchema = z.object({
   description: z.string().min(10),
   price: z.coerce.number().positive(),
   deliveryTimeDays: z.coerce.number().int().positive(),
-  categoryId: z.coerce.number().int().positive(),
-  // Bisa URL https:// atau data:image/... dari upload device (auto-kompresi client), max ~2MB base64
-  imageUrl: z.string().max(2_500_000).optional().or(z.literal('')).refine(
-    (v) => !v || v.startsWith('data:image/') || /^https?:\/\/.+/.test(v),
-    { message: 'URL gambar tidak valid' }
+  categoryId: z.string().min(1).refine((v) => /^[0-9a-fA-F]{24}$/.test(v) || /^\d+$/.test(v), "categoryId tidak valid"),
+  // Bisa URL https:// atau data:image/... dari upload device (auto-kompresi client), max ~800KB biner, tolak svg+xml
+  imageUrl: z.string().max(1_200_000).optional().or(z.literal('')).refine(
+    (v) => {
+      if (!v) return true
+      if (v.startsWith('data:image/')) {
+        if (v.includes('svg+xml')) return false
+        try { const b64 = v.split(',')[1] ?? ''; const len = Buffer.from(b64, 'base64').length; return len <= 800*1024 } catch { return false }
+      }
+      try {
+        const u = new URL(v); if (!['http:', 'https:'].includes(u.protocol)) return false
+        const allowed = ['images.unsplash.com','i.pravatar.cc','res.cloudinary.com','cdn.servislokal.id']
+        return allowed.some(h => u.hostname === h || u.hostname.endsWith('.' + h))
+      } catch { return false }
+    },
+    { message: 'URL gambar tidak valid atau host tidak diizinkan' }
   ),
 })
 
@@ -157,8 +170,8 @@ export async function POST(request: Request) {
         price: validated.price,
         deliveryTimeDays: validated.deliveryTimeDays,
         imageUrl: validated.imageUrl || null,
-        categoryId: validated.categoryId,
-        providerId: user.id,
+        categoryId: toPrismaId(validated.categoryId) as unknown as number & string,
+        providerId: toPrismaId(String(user.id)) as unknown as number & string,
         status: 'ACTIVE',
       },
     })

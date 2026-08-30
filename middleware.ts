@@ -25,6 +25,36 @@ const PUBLIC_PATHS = [
   "/manifest.webmanifest",
 ]
 
+const KNOWN_PREFIXES = [
+  "/",
+  "/services",
+  "/service",
+  "/provider",
+  "/checkout",
+  "/orders",
+  "/dashboard",
+  "/login",
+  "/register",
+  "/faq",
+  "/api",
+  "/sitemap",
+  "/robots",
+  "/icon",
+  "/opengraph-image",
+]
+
+function isKnownPath(pathname: string): boolean {
+  return KNOWN_PREFIXES.some((p) => {
+    if (p === "/") return pathname === "/"
+    // exact atau prefix dengan "/" atau "." (untuk /sitemap.xml, /robots.txt)
+    return (
+      pathname === p ||
+      pathname.startsWith(`${p}/`) ||
+      pathname.startsWith(`${p}.`)
+    )
+  })
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -36,6 +66,11 @@ export async function middleware(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   )
+
+  // Hijack 404 fix: unknown routes jangan redirect ke /login, biarkan Next render 404
+  if (!isKnownPath(pathname) && !isPublic) {
+    return NextResponse.next()
+  }
 
   const token = await getToken({
     req: request,

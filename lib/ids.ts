@@ -5,10 +5,16 @@ export function isObjectId(id: string): boolean {
 
 export function toPrismaId(id: string): string | number {
   if (!id) return id as unknown as number
+  const trimmed = String(id).trim()
+  if (!trimmed) return id as unknown as number
   // Jika 24 hex => Mongo ObjectId, biarkan string
-  if (isObjectId(id)) return id
-  const n = parseInt(id, 10)
-  return Number.isNaN(n) ? id : n
+  if (isObjectId(trimmed)) return trimmed
+  // Hanya parse jika murni digit (hindari "123abc" -> 123)
+  if (/^\d+$/.test(trimmed)) {
+    const n = parseInt(trimmed, 10)
+    return Number.isNaN(n) ? trimmed : n
+  }
+  return trimmed
 }
 
 // Untuk where clause yang butuh id

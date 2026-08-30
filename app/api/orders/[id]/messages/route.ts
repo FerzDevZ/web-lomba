@@ -23,7 +23,7 @@ async function getOrderParticipant(orderId: string | number, userId: string | nu
     include: { service: { select: { providerId: true } } },
   })
   if (!order) return { error: "Pesanan tidak ditemukan", status: 404 }
-  if (!sameId(order.customerId, userId) && order.service.providerId !== userId) {
+  if (!sameId(order.customerId, userId) && !sameId(order.service.providerId, userId)) {
     return { error: "Forbidden: bukan peserta pesanan ini", status: 403 }
   }
   return { order }

@@ -11,6 +11,7 @@ import {
   CalendarDays,
 } from "lucide-react"
 import { prisma } from "@/lib/prisma"
+import { toPrismaId } from "@/lib/ids"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PageShell } from "@/components/layout/page-shell"
@@ -26,7 +27,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(id, 10) },
+    where: { id: toPrismaId(id) as unknown as string & number },
     select: { name: true, role: true },
   })
   if (!user || user.role === "CUSTOMER") {
@@ -50,7 +51,7 @@ export default async function ProviderProfilePage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const providerId = parseInt(id, 10)
+  const providerId = toPrismaId(id) as unknown as string & number
 
   const [user, services, reviews] = await Promise.all([
     prisma.user.findUnique({
