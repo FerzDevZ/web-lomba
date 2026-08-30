@@ -35,6 +35,7 @@ function LoginForm() {
       email,
       password,
       redirect: false,
+      callbackUrl,
     })
 
     if (result?.error) {
@@ -43,8 +44,10 @@ function LoginForm() {
       return
     }
 
-    router.push(callbackUrl)
-    router.refresh()
+    // NextAuth dengan redirect:false kadang tidak set cookie untuk router.push (RSC cache).
+    // Paksa hard navigation agar middleware baca cookie baru — hindari muter terus.
+    const dest = result?.url ?? callbackUrl
+    window.location.assign(dest)
   }
 
   return (
