@@ -11,13 +11,13 @@ import { Eye, EyeOff, ExternalLink, Loader2, PlusCircle } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
 
 type OwnService = {
-  id: number
+  id: string | number
   title: string
   slug: string
   price: number
   status: "ACTIVE" | "DRAFT" | "ARCHIVED"
   createdAt: string
-  category: { id: number; name: string }
+  category: { id: string | number; name: string }
   _count: { orders: number }
 }
 

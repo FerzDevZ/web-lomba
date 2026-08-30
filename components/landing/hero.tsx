@@ -8,6 +8,8 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Search, ShieldCheck, Star, ArrowRight } from "lucide-react";
 import { DURATION, GSAP_EASE, prefersReducedMotion } from "@/lib/motion";
+import { Counter } from "@/components/landing/counter";
+import { LOCATION_SUGGESTIONS } from "@/lib/provinces";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -34,8 +36,8 @@ export function Hero({
   ratingAvg = 0,
   cityCount = 0,
 }: {
-  categories: { slug: string; name: string; id: number }[];
-  providers?: { name: string | null; location: string | null }[];
+  categories: { slug: string; name: string; id: string | number }[];
+  providers?: { name: string | null; location: string | null; avatarUrl: string | null }[];
   providerCount?: number;
   completedOrders?: number;
   ratingAvg?: number;
@@ -88,6 +90,18 @@ export function Hero({
           scrub: true,
         },
       });
+
+      // Kartu statistik melayang pelan dengan fase berlawanan — janji
+      // PLANNING.md §4 "floating glass card" yang sebelumnya statis.
+      gsap.utils.toArray<HTMLElement>("[data-hero-float]").forEach((el, i) => {
+        gsap.to(el, {
+          y: i % 2 === 0 ? -8 : 8,
+          duration: 2.6 + i * 0.5,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+        });
+      });
     },
     { scope: root },
   );
@@ -111,7 +125,7 @@ export function Hero({
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary-strong"
           >
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-            Penyedia terverifikasi di kota Anda
+            Jangkauan nasional • 38 provinsi • Aceh hingga Papua
           </div>
 
           {/* text-6xl kini clamp() di tailwind.config, jadi satu kelas
@@ -119,7 +133,7 @@ export function Hero({
           <h1 data-hero-fade className="text-6xl font-extrabold tracking-tight">
             Jasa terbaik dari{" "}
             <span className="font-serif italic text-primary-strong">
-              tetangga terpercaya
+              orang terpercaya
             </span>{" "}
             di sekitarmu
           </h1>
@@ -133,11 +147,11 @@ export function Hero({
             penyedia jasa profesional.
           </p>
 
-          {/* Search */}
+          {/* Search — command palette style */}
           <form
             data-hero-fade
             action="/services"
-            className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-card transition-all focus-within:border-primary/50 focus-within:shadow-glow"
+            className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2.5 shadow-card-lg transition-all focus-within:border-primary/50 focus-within:shadow-glow sm:p-3"
           >
             <Search
               className="ml-3 h-5 w-5 shrink-0 text-muted-foreground"
@@ -146,12 +160,22 @@ export function Hero({
             <input
               name="search"
               aria-label="Cari jasa"
-              placeholder="Cari jasa di daerah Anda..."
+              placeholder='Cari: Service AC, Pasang Listrik, Bersih Rumah...'
               className="w-full bg-transparent px-2 py-3 text-sm outline-none placeholder:text-muted-foreground sm:text-base"
+              list="hero-search-list"
+              autoComplete="off"
             />
+            <datalist id="hero-search-list">
+              {LOCATION_SUGGESTIONS.slice(0, 8).map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+            <kbd className="hidden shrink-0 items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-2xs font-medium text-muted-foreground sm:inline-flex">
+              ⌘K
+            </kbd>
             <button
               type="submit"
-              className="focus-ring flex shrink-0 items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow transition-all duration-base hover:brightness-110 active:scale-[0.98]"
+              className="focus-ring flex shrink-0 items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-all duration-base hover:brightness-110 active:scale-[0.98]"
             >
               Cari <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
@@ -168,6 +192,27 @@ export function Hero({
                 {cat.name}
               </Link>
             ))}
+          </div>
+
+          {/* Nasional pills — max 3 biar tidak clutter di HP */}
+          <div data-hero-fade className="mt-4 flex max-w-xl flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Populer:</span>
+            {[
+              { label: "Pangkal Pinang", q: "Kepulauan Bangka Belitung" },
+              { label: "Tanjung Pinang", q: "Kepulauan Riau" },
+              { label: "Jayapura", q: "Papua" },
+            ].map((loc) => (
+              <Link
+                key={loc.label}
+                href={`/services?location=${encodeURIComponent(loc.q)}`}
+                className="focus-ring rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                {loc.label}
+              </Link>
+            ))}
+            <Link href="/services" className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-strong hover:bg-primary hover:text-primary-foreground transition-colors">
+              +{cityCount} kota
+            </Link>
           </div>
         </div>
 
@@ -200,24 +245,37 @@ export function Hero({
 
             <HeroOrb />
 
-            {/* Kartu rating — ditempel ke tepi kiri cincin */}
-            <div className="glass absolute -left-4 top-[14%] hidden w-44 rounded-2xl p-4 shadow-card-lg sm:block">
-              <div className="flex items-center gap-1.5">
-                <Star className="h-4 w-4 fill-rating text-rating" aria-hidden />
-                <span className="text-lg font-extrabold">
-                  {ratingAvg.toFixed(1)}
+            {/* Kartu rating — ditempel ke tepi kiri cincin. Tampil di semua
+                ukuran: di mobile inilah satu-satunya bukti sosial numerik. */}
+            <div
+              data-hero-float
+              className="glass absolute -left-2 top-[12%] w-38 rounded-2xl p-3.5 shadow-card-lg sm:-left-4 sm:top-[14%] sm:w-48 sm:p-4"
+            >
+              <div className="flex items-baseline gap-1">
+                <Star
+                  className="h-4 w-4 self-center fill-rating text-rating"
+                  aria-hidden
+                />
+                <span className="text-2xl font-extrabold tabular-nums sm:text-3xl">
+                  <Counter value={ratingAvg} decimals={1} />
+                </span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  /5
                 </span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs leading-tight text-muted-foreground">
                 Rating rata-rata dari {completedOrders.toLocaleString("id-ID")}+
                 pesanan
               </p>
             </div>
 
             {/* Kartu jumlah penyedia — ditempel ke tepi kanan-bawah cincin */}
-            <div className="glass absolute -right-4 bottom-[14%] hidden w-44 rounded-2xl p-4 shadow-card-lg sm:block">
-              <div className="text-lg font-extrabold text-primary-strong">
-                {providerCount.toLocaleString("id-ID")}+
+            <div
+              data-hero-float
+              className="glass absolute -right-2 bottom-[12%] w-38 rounded-2xl p-3.5 shadow-card-lg sm:-right-4 sm:bottom-[14%] sm:w-48 sm:p-4"
+            >
+              <div className="text-2xl font-extrabold tabular-nums text-primary-strong sm:text-3xl">
+                <Counter value={providerCount} suffix="+" />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Penyedia jasa aktif
@@ -236,16 +294,27 @@ export function Hero({
               <ul className="flex items-center">
                 {providers.slice(0, 5).map((provider, i) => (
                   <li
-                    key={provider.name}
+                    // Nama bisa duplikat di data nyata; index menjamin key unik.
+                    key={`${provider.name}-${i}`}
                     className="-ml-2 first:ml-0"
                     style={{ zIndex: providers.length - i }}
                   >
-                    <span
-                      title={`${provider.name}${provider.location ? ` — ${provider.location}` : ""}`}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-bold text-secondary-foreground"
-                    >
-                      {initials(provider.name)}
-                    </span>
+                    {provider.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={provider.avatarUrl}
+                        alt={provider.name ?? "Provider"}
+                        title={`${provider.name}${provider.location ? ` — ${provider.location}` : ""}`}
+                        className="h-9 w-9 rounded-full border-2 border-background object-cover shadow-sm"
+                      />
+                    ) : (
+                      <span
+                        title={`${provider.name}${provider.location ? ` — ${provider.location}` : ""}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-bold text-secondary-foreground"
+                      >
+                        {initials(provider.name)}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

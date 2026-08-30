@@ -29,24 +29,30 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
             return (
               <li key={step} className="flex flex-1 items-center last:flex-none">
                 <div className="flex flex-col items-center">
-                  <div
-                    aria-current={status === step ? "step" : undefined}
-                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-base ${
-                      done
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card text-muted-foreground"
-                    }`}
-                  >
-                    {done ? (
-                      <CheckCircle2 className="h-4 w-4" aria-hidden />
-                    ) : (
-                      <span className="text-xs font-bold">{i + 1}</span>
+                  <div className="relative flex flex-col items-center">
+                    {/* Pulse ring di step yang sedang aktif */}
+                    {status === step && !cancelled && (
+                      <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-primary/25" />
                     )}
+                    <div
+                      aria-current={status === step ? "step" : undefined}
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-base ${
+                        done
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground"
+                      } ${status === step && !cancelled ? "shadow-glow" : ""}`}
+                    >
+                      {done ? (
+                        <CheckCircle2 className="h-4 w-4" aria-hidden />
+                      ) : (
+                        <span className="text-xs font-bold">{i + 1}</span>
+                      )}
+                    </div>
                   </div>
                   <span
                     className={`mt-2 text-2xs font-medium ${
                       done ? "text-foreground" : "text-muted-foreground"
-                    }`}
+                    } ${status === step ? "text-primary-strong" : ""}`}
                   >
                     {STEP_LABEL[step]}
                   </span>
@@ -54,7 +60,7 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
                 {i < ORDER_STEPS.length - 1 && (
                   <div
                     aria-hidden
-                    className={`mx-2 mb-6 h-0.5 flex-1 rounded-full ${
+                    className={`mx-2 mb-6 h-0.5 flex-1 rounded-full transition-colors duration-500 ${
                       !cancelled && currentStep > i ? "bg-primary" : "bg-border"
                     }`}
                   />

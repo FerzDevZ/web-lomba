@@ -157,7 +157,7 @@ export default function RegisterPage() {
               ]}
             />
             <p className="text-xs text-muted-foreground">
-              Role bisa diubah kapan saja di dashboard.
+              Hubungi admin jika perlu mengubah role setelah daftar.
             </p>
           </div>
 

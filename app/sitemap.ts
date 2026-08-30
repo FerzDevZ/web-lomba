@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const services = await prisma.service.findMany({
     where: { status: "ACTIVE" },
-    select: { slug: true, createdAt: true },
+    select: { slug: true, createdAt: true, ratingAvg: true },
   })
 
   const providers = await prisma.user.findMany({
@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${base}/service/${s.slug}`,
       lastModified: s.createdAt,
       changeFrequency: "weekly" as const,
-      priority: 0.8,
+      priority: s.ratingAvg > 4.5 ? 0.9 : s.ratingAvg > 4.0 ? 0.8 : 0.7,
     })),
     ...providers.map((p) => ({
       url: `${base}/provider/${p.id}`,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"

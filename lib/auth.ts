@@ -4,6 +4,14 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Jangan spam log untuk salah password — CredentialsSignin adalah flow normal
+  logger: {
+    error(error) {
+      const msg = String((error as unknown as { message?: string })?.message ?? error)
+      if (msg.includes("CredentialsSignin")) return
+      console.error("[auth][error]", error)
+    },
+  },
   providers: [
     Credentials({
       name: "Credentials",
@@ -32,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          image: user.avatarUrl ?? undefined,
         }
       },
     }),
@@ -48,6 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.picture = (user as { image?: string }).image ?? token.picture
       }
       return token
     },
@@ -56,6 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = (token.id as string) ?? ""
         session.user.role =
           ((token.role as "CUSTOMER" | "PROVIDER" | "ADMIN") ?? "CUSTOMER")
+        if (token.picture) session.user.image = token.picture as string
         if (token.impersonatorId) {
           session.user.impersonatedBy = token.impersonatorId as string
         }

@@ -2,12 +2,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { Star, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { formatIDR } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/category-icons"
 import { cn } from "@/lib/utils"
 
 export type ServiceTileData = {
-  id: number
+  id: string | number
   title: string
   slug: string
   description?: string | null
@@ -16,7 +17,7 @@ export type ServiceTileData = {
   imageUrl: string | null
   ratingAvg: number
   totalReviews: number
-  provider: { name: string | null }
+  provider: { name: string | null; avatarUrl?: string | null; city?: string | null }
   category: { name: string; slug: string }
 }
 
@@ -48,7 +49,7 @@ export function ServiceTile({
     <Link
       href={`/service/${service.slug}`}
       className={cn(
-        "focus-ring group block overflow-hidden rounded-2xl border border-border bg-card transition-all duration-base hover:-translate-y-1 hover:shadow-card-lg",
+        "focus-ring group block overflow-hidden rounded-2xl border border-border bg-card transition-all duration-base hover:-translate-y-1 hover:shadow-card-lg dark:hover:shadow-card-dark dark:hover:border-white/10",
         className
       )}
     >
@@ -64,7 +65,8 @@ export function ServiceTile({
             alt={service.title}
             fill
             sizes={sizes}
-            className="object-cover"
+            className="object-cover transition-transform duration-slow group-hover:scale-105"
+            unoptimized={service.imageUrl.startsWith("data:")}
           />
         ) : (
           <Icon
@@ -92,13 +94,28 @@ export function ServiceTile({
         </h3>
 
         <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-          <span
-            aria-hidden
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xs font-bold text-primary-strong"
-          >
-            {(service.provider.name ?? "P").charAt(0).toUpperCase()}
-          </span>
+          {service.provider.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={service.provider.avatarUrl} alt="" aria-hidden className="h-6 w-6 shrink-0 rounded-full object-cover" />
+          ) : (
+            <span
+              aria-hidden
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xs font-bold text-primary-strong"
+            >
+              {(service.provider.name ?? "P").charAt(0).toUpperCase()}
+            </span>
+          )}
           <span className="truncate">{service.provider.name ?? "Provider"}</span>
+          {service.provider.city && (
+            <span className="hidden items-center gap-1 truncate text-xs text-muted-foreground/70 sm:inline-flex">
+              • {service.provider.city.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")}
+            </span>
+          )}
+          {service.totalReviews > 10 && (
+            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-2xs font-semibold text-success">
+              ✓ Terverifikasi
+            </span>
+          )}
         </div>
 
         {showDescription && service.description && (
@@ -108,12 +125,14 @@ export function ServiceTile({
         )}
 
         <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" aria-hidden />
+          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Clock className="h-4 w-4" aria-hidden />
             {service.deliveryTimeDays} hari
           </span>
-          <span className="text-lg font-extrabold text-primary-strong">
-            {formatIDR(service.price)}
+          <span className="flex items-baseline gap-1 tabular-nums">
+            <span className="text-xs font-medium text-muted-foreground">Rp</span>
+            <span className="text-xl font-extrabold tracking-tight text-primary-strong">{new Intl.NumberFormat("id-ID").format(service.price)}</span>
+            <span className="text-xs font-normal text-muted-foreground">/ selesai</span>
           </span>
         </div>
       </div>
@@ -125,16 +144,11 @@ export function ServiceTile({
 export function ServiceTileSkeleton({ media = "md" }: { media?: "sm" | "md" }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div
-        className={cn(
-          "animate-pulse bg-muted",
-          media === "sm" ? "h-36" : "h-44"
-        )}
-      />
+      <Skeleton className={cn("rounded-none", media === "sm" ? "h-36" : "h-44")} />
       <div className="space-y-3 p-5">
-        <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-        <div className="h-6 w-1/3 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-6 w-1/3" />
       </div>
     </div>
   )

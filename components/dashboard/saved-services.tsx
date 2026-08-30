@@ -17,7 +17,7 @@ import { getCategoryIcon } from "@/lib/category-icons"
 import Image from "next/image"
 
 type SavedServiceItem = {
-  id: number
+  id: string | number
   title: string
   slug: string
   price: number
@@ -26,7 +26,7 @@ type SavedServiceItem = {
   ratingAvg: number
   totalReviews: number
   provider: { name: string | null }
-  category: { id: number; name: string; slug: string }
+  category: { id: string | number; name: string; slug: string }
 }
 
 // Daftar jasa yang disimpan pelanggan (wishlist)
@@ -43,7 +43,7 @@ export function SavedServices() {
   })
 
   const removeMutation = useMutation({
-    mutationFn: async (serviceId: number) => {
+    mutationFn: async (serviceId: string | number) => {
       const res = await fetch("/api/saved", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

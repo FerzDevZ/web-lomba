@@ -6,6 +6,8 @@ import { Search, X } from "lucide-react"
 export function SearchBar() {
   const inputRef = React.useRef<HTMLInputElement>(null)
   const mobileInputRef = React.useRef<HTMLInputElement>(null)
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
   // Shortcut "/" untuk fokus search aktif (desktop)
@@ -25,31 +27,29 @@ export function SearchBar() {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
 
-  // Fokus otomatis & lock scroll saat search mobile terbuka
-  React.useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden"
-      // Delay sedikit agar animasi slide-down mulus sebelum fokus
-      const t = setTimeout(() => mobileInputRef.current?.focus(), 100)
-      return () => {
-        clearTimeout(t)
-        document.body.style.overflow = ""
-      }
-    }
-    document.body.style.overflow = ""
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [mobileOpen])
-
-  // Tutup overlay search mobile dengan tombol Escape
+  // Fokus, trap & Escape untuk overlay mobile
   React.useEffect(() => {
     if (!mobileOpen) return
+    previousFocus.current = document.activeElement as HTMLElement | null
+    document.body.style.overflow = "hidden"
+    const t = setTimeout(() => mobileInputRef.current?.focus(), 100)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileOpen(false)
+      if (e.key !== "Tab" || !panelRef.current) return
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
     }
     window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
+    return () => {
+      clearTimeout(t)
+      document.body.style.overflow = ""
+      window.removeEventListener("keydown", onKey)
+      previousFocus.current?.focus()
+    }
   }, [mobileOpen])
 
   return (
@@ -64,10 +64,11 @@ export function SearchBar() {
           <input
             ref={inputRef}
             name="search"
+            aria-label="Cari jasa"
             placeholder="Cari jasa: AC, listrik, kebersihan..."
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="hidden shrink-0 rounded-md border border-border bg-muted px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground lg:block">
+          <kbd className="hidden shrink-0 rounded-md border border-input bg-background px-1.5 py-0.5 text-2xs font-semibold text-foreground lg:block">
             /
           </kbd>
         </div>
@@ -93,7 +94,13 @@ export function SearchBar() {
           />
 
           {/* Panel search slide-down dari atas */}
-          <div className="absolute inset-x-0 top-0 border-b border-border bg-background p-3 shadow-card-lg animate-in slide-in-from-top-4 duration-200">
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pencarian"
+            className="absolute inset-x-0 top-0 border-b border-border bg-background p-3 shadow-card-lg animate-in slide-in-from-top-4 duration-200"
+          >
             <form
               action="/services"
               className="flex items-center gap-2"

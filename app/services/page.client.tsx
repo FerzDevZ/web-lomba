@@ -1,12 +1,13 @@
 "use client"
 
+import * as React from "react"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PageShell } from "@/components/layout/page-shell"
-import { SearchX, SlidersHorizontal } from "lucide-react"
+import { SearchX, SlidersHorizontal, ChevronDown, X } from "lucide-react"
 import {
   ServiceTile,
   ServiceTileSkeleton,
@@ -21,7 +22,7 @@ import {
 
 type ServiceItem = ServiceTileData & {
   description: string
-  category: { id: number; name: string; slug: string }
+  category: { id: string | number; name: string; slug: string }
 }
 
 type ServicesResponse = {
@@ -139,7 +140,21 @@ function CatalogContent() {
     },
   })
 
-  const { data, isLoading, isError } = useQuery<ServicesResponse>({
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!sortOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSortOpen(false) }
+    document.addEventListener("mousedown", onDown)
+    document.addEventListener("keydown", onKey)
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey) }
+  }, [sortOpen])
+
+  const { data, isLoading, isFetching, isError, error } = useQuery<ServicesResponse>({
     queryKey: [
       "services",
       debouncedSearch,
@@ -159,10 +174,18 @@ function CatalogContent() {
       if (minPrice) params.append("minPrice", minPrice)
       if (maxPrice) params.append("maxPrice", maxPrice)
       if (rating) params.append("rating", String(rating))
+      // Validasi client-side untuk min>max (P1-6) — tangkap sebelum request
+      if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
+        throw new Error("Harga minimum tidak boleh lebih besar dari maksimum")
+      }
       const res = await fetch(`/api/services?${params.toString()}`)
-      if (!res.ok) throw new Error("Gagal memuat jasa")
+      if (!res.ok) {
+        const err = await res.json().catch(() => null)
+        throw new Error(err?.error ?? "Gagal memuat jasa")
+      }
       return res.json()
     },
+    placeholderData: keepPreviousData,
   })
 
   useEffect(() => {
@@ -207,21 +230,60 @@ function CatalogContent() {
               : `${data?.total ?? 0} jasa ditemukan`}
           </p>
         </div>
-        <select
-          value={sort}
-          onChange={(e) => {
-            setSort(e.target.value)
-            setPage(1)
-          }}
-          className="focus-ring h-10 shrink-0 rounded-lg border border-input bg-card px-3 text-sm"
-          aria-label="Urutkan jasa"
-        >
-          {SORT_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <div ref={sortRef} className="relative shrink-0">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={sortOpen}
+            aria-label="Urutkan jasa"
+            id="sort-button"
+            aria-controls="sort-listbox"
+            onClick={() => setSortOpen((v) => !v)}
+            className="focus-ring flex h-10 w-48 items-center justify-between rounded-lg border border-input bg-card px-3 text-sm"
+          >
+            <span>{SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Terbaru"}</span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${sortOpen ? "rotate-180" : ""}`} aria-hidden />
+          </button>
+          {sortOpen && (
+            <div
+              role="listbox"
+              id="sort-listbox"
+              aria-label="Urutkan jasa"
+              aria-labelledby="sort-button"
+              className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-card-lg"
+              onKeyDown={(e) => { if (e.key === "Tab") setSortOpen(false) }}
+            >
+              {SORT_OPTIONS.map((o) => (
+                <button
+                  key={o.value}
+                  role="option"
+                  id={`sort-option-${o.value}`}
+                  aria-selected={o.value === sort}
+                  onClick={() => { setSort(o.value); setPage(1); setSortOpen(false) }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSort(o.value); setPage(1); setSortOpen(false) }
+                    if (e.key === "Escape") { e.preventDefault(); setSortOpen(false); (document.getElementById("sort-button") as HTMLElement)?.focus() }
+                    if (e.key === "Tab") setSortOpen(false)
+                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                      e.preventDefault()
+                      const idx = SORT_OPTIONS.findIndex((x) => x.value === o.value)
+                      const next = e.key === "ArrowDown" ? (idx + 1) % SORT_OPTIONS.length : (idx - 1 + SORT_OPTIONS.length) % SORT_OPTIONS.length
+                      const el = sortRef.current?.querySelectorAll('[role="option"]')[next] as HTMLElement | undefined
+                      el?.focus()
+                    }
+                    if (e.key === "Home") { e.preventDefault(); (sortRef.current?.querySelectorAll('[role="option"]')[0] as HTMLElement)?.focus() }
+                    if (e.key === "End") { e.preventDefault(); const els = sortRef.current?.querySelectorAll('[role="option"]'); (els?.[els.length -1] as HTMLElement)?.focus() }
+                  }}
+                  tabIndex={o.value === sort ? 0 : -1}
+                  className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors ${o.value === sort ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+                >
+                  {o.label}
+                  {o.value === sort && <span aria-hidden>✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-8 lg:flex-row">
@@ -233,7 +295,41 @@ function CatalogContent() {
         </aside>
 
         <div className="min-w-0 flex-1">
+          {/* Baris chip filter aktif — sticky agar selalu terlihat saat scroll hasil */}
+          {activeFilterCount > 0 && data && data.services.length > 0 && (
+            <div className="sticky top-16 z-10 -mx-4 mb-4 flex flex-wrap items-center gap-2 bg-background/80 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:mx-0 lg:px-0">
+              {category && categories && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary-strong">
+                  {categories.find((c) => String(c.id) === category)?.name ?? category}
+                  <button type="button" aria-label="Hapus filter kategori" onClick={() => updateFilters({ category: "" })} className="focus-ring ml-1 rounded-full p-0.5 hover:bg-primary/20"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {location && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary-strong">
+                  {location}
+                  <button type="button" aria-label="Hapus filter lokasi" onClick={() => updateFilters({ location: "" })} className="focus-ring ml-1 rounded-full p-0.5 hover:bg-primary/20"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {(minPrice || maxPrice) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary-strong">
+                  Rp {minPrice || "0"} – Rp {maxPrice || "∞"}
+                  <button type="button" aria-label="Hapus filter harga" onClick={() => updateFilters({ minPrice: "", maxPrice: "" })} className="focus-ring ml-1 rounded-full p-0.5 hover:bg-primary/20"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {rating > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-rating/15 px-3 py-1 text-xs font-medium">
+                  ≥ {rating}★
+                  <button type="button" aria-label="Hapus filter rating" onClick={() => updateFilters({ rating: 0 })} className="focus-ring ml-1 rounded-full p-0.5 hover:bg-rating/20"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              <button type="button" onClick={resetFilters} className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">Hapus semua</button>
+            </div>
+          )}
 
+          {/* Hasil katalog dalam wrapper yang memudar saat refetch (keepPreviousData)
+              — bukan skeleton blink penuh. */}
+          <div className={isFetching && !isLoading ? "opacity-60 transition-opacity" : undefined}>
+          {/* Penutup wrapper opacity untuk keepPreviousData */}
           {isError ? (
             <div
               role="alert"
@@ -241,9 +337,11 @@ function CatalogContent() {
             >
               <p className="font-semibold">Gagal memuat jasa</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Periksa koneksi Anda, lalu ubah salah satu filter untuk memuat
-                ulang daftar.
+                {(error as Error)?.message ?? "Periksa koneksi Anda, lalu ubah salah satu filter untuk memuat ulang daftar."}
               </p>
+              {minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice) && (
+                <p className="mt-2 text-sm font-medium text-destructive-strong">Harga minimum melebihi maksimum — perbaiki filter harga.</p>
+              )}
             </div>
           ) : isLoading ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,18 +353,35 @@ function CatalogContent() {
             <EmptyState
               icon={SearchX}
               title="Tidak ada jasa yang cocok"
-              description="Kombinasi filter Anda terlalu sempit. Longgarkan rentang harga atau hapus filter rating."
+              description={
+                location
+                  ? `Tidak ada jasa di "${location}". Coba hapus filter harga/rating atau lihat jasa di Kepulauan Riau (3 jasa) & Bali.`
+                  : "Kombinasi filter Anda terlalu sempit. Longgarkan rentang harga atau hapus filter rating."
+              }
               action={
-                <Button variant="outline" onClick={resetFilters}>
-                  Reset Semua Filter
-                </Button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button variant="outline" onClick={resetFilters}>
+                    Reset Semua Filter
+                  </Button>
+                  {location && (
+                    <Button variant="ghost" onClick={() => updateFilters({ location: "Kepulauan Riau" })}>
+                      Lihat Kepulauan Riau
+                    </Button>
+                  )}
+                </div>
               }
             />
           ) : (
             <>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {data?.services.map((service) => (
-                  <ServiceTile key={service.id} service={service} showDescription />
+                {data?.services.map((service, i) => (
+                  <div
+                    key={service.id}
+                    className="animate-rise-in"
+                    style={{ animationDelay: `${Math.min(i * 60, 280)}ms`, animationFillMode: "both" } as React.CSSProperties}
+                  >
+                    <ServiceTile service={service} showDescription />
+                  </div>
                 ))}
               </div>
 
@@ -283,6 +398,12 @@ function CatalogContent() {
                   >
                     Sebelumnya
                   </Button>
+                  {pageNumbers[0] > 1 && (
+                    <>
+                      <Button variant="outline" size="sm" className="min-w-9" onClick={() => setPage(1)}>1</Button>
+                      {pageNumbers[0] > 2 && <span className="px-1 text-muted-foreground">…</span>}
+                    </>
+                  )}
                   {pageNumbers.map((n) => (
                     <Button
                       key={n}
@@ -295,6 +416,12 @@ function CatalogContent() {
                       {n}
                     </Button>
                   ))}
+                  {pageNumbers[pageNumbers.length - 1] < (data?.totalPages ?? 1) && (
+                    <>
+                      {pageNumbers[pageNumbers.length - 1] < (data?.totalPages ?? 1) - 1 && <span className="px-1 text-muted-foreground">…</span>}
+                      <Button variant="outline" size="sm" className="min-w-9" onClick={() => setPage(data?.totalPages ?? 1)}>{data?.totalPages}</Button>
+                    </>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -307,11 +434,12 @@ function CatalogContent() {
               )}
             </>
           )}
+          </div>
         </div>
       </div>
 
-      {/* Action bar mobile: filter tidak lagi mendorong hasil ke bawah lipatan */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-xl lg:hidden">
+      {/* Action bar mobile: glass */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-4">
           <span className="text-sm text-muted-foreground">
             {isLoading ? "Memuat…" : `${data?.total ?? 0} jasa`}

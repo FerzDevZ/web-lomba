@@ -58,6 +58,10 @@ test.describe("siklus hidup pesanan", () => {
     await expect(page).toHaveURL(/\/checkout\?service=/)
 
     await page
+      .getByLabel(/Alamat Pelaksanaan/i)
+      .fill("Jl. Melati No.12, Jakarta Selatan")
+
+    await page
       .getByLabel(/Catatan Tambahan/i)
       .fill("Pesanan uji otomatis dari Playwright.")
 

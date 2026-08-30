@@ -91,8 +91,15 @@ function LoginForm() {
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Memproses..." : "Masuk"}
+          <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+                Memproses...
+              </span>
+            ) : (
+              "Masuk"
+            )}
           </Button>
         </form>
 

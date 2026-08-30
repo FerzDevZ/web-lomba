@@ -51,7 +51,7 @@ type AdminStats = {
   totalServices: number
   activeServices: number
   draftServices: {
-    id: number
+    id: string | number
     title: string
     provider: { name: string | null }
     category: { name: string }
@@ -60,7 +60,7 @@ type AdminStats = {
   revenue: number
   avgRating: number
   recentOrders: {
-    id: number
+    id: string | number
     totalPrice: number
     status: string
     customer: { name: string | null }
@@ -72,7 +72,7 @@ type AdminStats = {
   }[]
   ordersByDay: { date: string; count: number }[]
   categoryRevenue: { name: string; value: number }[]
-  topProviders: { id: number; name: string; revenue: number; orders: number }[]
+  topProviders: { id: string | number; name: string; revenue: number; orders: number }[]
   statusBreakdown: {
     PENDING: number
     IN_PROGRESS: number

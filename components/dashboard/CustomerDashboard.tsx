@@ -28,7 +28,7 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { EmptyState } from "@/components/ui/empty-state"
 
 type OrderItem = {
-  id: number
+  id: string | number
   totalPrice: number
   status: string
   createdAt: string
@@ -64,7 +64,8 @@ export function CustomerDashboard() {
 
   const completed = orders?.filter((o) => o.status === "COMPLETED").length ?? 0
   const inProgress = orders?.filter((o) => o.status === "IN_PROGRESS").length ?? 0
-  const totalSpent = orders?.reduce((sum, o) => sum + o.totalPrice, 0) ?? 0
+  // Jangan hitung CANCELLED — sebelumnya semua status dijumlah (P1-3)
+  const totalSpent = orders?.filter((o) => o.status !== "CANCELLED").reduce((sum, o) => sum + o.totalPrice, 0) ?? 0
   const visible = orders?.filter(FILTERS[filter]) ?? []
 
   return (

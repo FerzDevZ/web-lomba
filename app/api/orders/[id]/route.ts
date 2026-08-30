@@ -11,6 +11,7 @@ import {
   type OrderStatus,
 } from "@/lib/order-status"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
+import { toPrismaId, sameId } from "@/lib/ids"
 
 export const dynamic = "force-dynamic"
 
@@ -36,13 +37,13 @@ export async function GET(
   if (limited) return limited
 
   const { id } = await params
-  const orderId = parseInt(id, 10)
-  if (!Number.isFinite(orderId)) {
+  const orderId = toPrismaId(id) as unknown as number & string
+  if (!id || String(id).trim() === "") {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
   const order = await prisma.order.findUnique({
-    where: { id: orderId },
+    where: { id: orderId } as unknown as { id: string | number } & { id: string },
     include: {
       customer: { select: { id: true, name: true, avatarUrl: true } },
       service: {
@@ -61,9 +62,9 @@ export async function GET(
     return NextResponse.json({ error: "Pesanan tidak ditemukan" }, { status: 404 })
   }
 
-  const userId = parseInt(session.user.id, 10)
-  const isCustomer = order.customerId === userId
-  const isProvider = order.service.providerId === userId
+  const userId = toPrismaId(session.user.id) as unknown as number & string
+  const isCustomer = sameId(order.customerId, userId)
+  const isProvider = sameId(order.service.providerId, userId)
   if (!isCustomer && !isProvider) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
@@ -81,8 +82,8 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const orderId = parseInt(id, 10)
-  if (!Number.isFinite(orderId)) {
+  const orderId = toPrismaId(id) as unknown as number & string
+  if (!id || String(id).trim() === "") {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
@@ -99,7 +100,7 @@ export async function PATCH(
     const { status } = statusSchema.parse(body)
 
     const order = await prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id: orderId } as unknown as { id: string | number } & { id: string },
       include: { service: { select: { providerId: true } } },
     })
 
@@ -107,9 +108,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Pesanan tidak ditemukan" }, { status: 404 })
     }
 
-    const userId = parseInt(session.user.id, 10)
-    const isProvider = order.service.providerId === userId
-    const isCustomer = order.customerId === userId
+    const userId = toPrismaId(session.user.id) as unknown as number & string
+    const isProvider = sameId(order.service.providerId, userId)
+    const isCustomer = sameId(order.customerId, userId)
 
     if (!isProvider && !isCustomer) {
       return NextResponse.json(
@@ -141,36 +142,37 @@ export async function PATCH(
       )
     }
 
-    const updated = await prisma.order.update({
-      where: { id: orderId },
-      // completedAt hanya ditulis saat masuk COMPLETED; transisi lain
-      // tidak menyentuhnya agar jendela ulasan tidak pernah hilang.
-      data:
-        status === "COMPLETED"
-          ? { status, completedAt: new Date() }
-          : { status },
-    })
-
-    // Jika selesai, perbarui rating agregat jasa
-    if (status === "COMPLETED") {
-      const service = await prisma.service.findUnique({
-        where: { id: updated.serviceId },
-        include: {
-          orders: {
-            where: { status: "COMPLETED" },
-            include: { reviews: true },
-          },
-        },
+    // Update + agregat dalam transaksi untuk mencegah race (P0-3)
+    const updated = await prisma.$transaction(async (tx) => {
+      // @ts-ignore - handle string|number id for mongo/sqlite
+      const ord = await tx.order.update({
+        where: { id: orderId },
+        data:
+          status === "COMPLETED"
+            ? { status, completedAt: new Date() }
+            : { status },
       })
-      if (service) {
-        const reviews = service.orders.flatMap((o) => o.reviews)
-        const agg = computeRatingAggregate(reviews)
-        await prisma.service.update({
-          where: { id: service.id },
-          data: agg,
+      if (status === "COMPLETED") {
+        const service = await tx.service.findUnique({
+          where: { id: ord.serviceId },
+          include: {
+            orders: {
+              where: { status: "COMPLETED" },
+              include: { reviews: true },
+            },
+          },
         })
+        if (service) {
+          const reviews = service.orders.flatMap((o) => o.reviews)
+          const agg = computeRatingAggregate(reviews)
+          await tx.service.update({
+            where: { id: service.id },
+            data: agg,
+          })
+        }
       }
-    }
+      return ord
+    })
 
     return NextResponse.json(updated)
   } catch (error) {

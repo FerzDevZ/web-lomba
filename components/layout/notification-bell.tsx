@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 import { Bell } from "lucide-react"
 
 type NotificationItem = {
-  orderId: number
+  orderId: string | number
   message: string
   time: string
 }
@@ -32,9 +32,17 @@ export function NotificationBell() {
 
   React.useEffect(() => {
     load()
-    // Polling ringan setiap 30 detik
-    const interval = setInterval(load, 30_000)
-    return () => clearInterval(interval)
+    // Polling ringan setiap 30 detik, jeda saat tab hidden (P2)
+    const interval = setInterval(() => {
+      if (document.hidden) return
+      load()
+    }, 30_000)
+    const onVis = () => { if (!document.hidden) load() }
+    document.addEventListener("visibilitychange", onVis)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", onVis)
+    }
   }, [load])
 
   if (!session?.user) return null
@@ -44,13 +52,14 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label="Notifikasi"
+        aria-label={count > 0 ? `${count} notifikasi baru` : "Notifikasi"}
         aria-expanded={open}
+        aria-haspopup="dialog"
         className="focus-ring relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:border-primary/40 hover:text-primary-strong"
       >
         <Bell className="h-4 w-4" />
         {count > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-bold text-destructive-foreground">
+          <span aria-hidden className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-bold text-destructive-foreground">
             {count > 9 ? "9+" : count}
           </span>
         )}

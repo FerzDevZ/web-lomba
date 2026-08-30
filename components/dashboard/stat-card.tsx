@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { Counter } from "@/components/landing/counter"
 
 const TONES = {
   primary: "bg-primary/10 text-primary-strong",
@@ -30,13 +31,13 @@ export function StatCard({
   className?: string
 }) {
   return (
-    <Card className={className}>
+    <Card className={cn("transition-all hover:-translate-y-0.5 hover:shadow-card", className)}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="mt-1 truncate text-2xl font-bold tabular-nums">
-              {value}
+              {typeof value === "number" ? <Counter value={value} /> : value}
             </p>
             {hint && (
               <p className="mt-1 text-2xs text-muted-foreground">{hint}</p>

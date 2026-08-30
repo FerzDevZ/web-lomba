@@ -109,7 +109,7 @@ export default function OpengraphImage() {
             servislokal.id
           </div>
           <div style={{ display: "flex", color: "#A29B94" }}>
-            Marketplace jasa lokal Indonesia
+            38 provinsi • Aceh hingga Papua
           </div>
         </div>
       </div>

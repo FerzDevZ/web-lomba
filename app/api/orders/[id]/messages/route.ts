@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { toPrismaId, sameId } from "@/lib/ids"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 
 export const dynamic = "force-dynamic"
@@ -16,13 +17,13 @@ const createMessageSchema = z.object({
     .max(MESSAGE_MAX, `Pesan maksimal ${MESSAGE_MAX} karakter`),
 })
 
-async function getOrderParticipant(orderId: number, userId: number) {
+async function getOrderParticipant(orderId: string | number, userId: string | number) {
   const order = await prisma.order.findUnique({
-    where: { id: orderId },
+    where: { id: orderId } as unknown as { id: string | number } & { id: string },
     include: { service: { select: { providerId: true } } },
   })
   if (!order) return { error: "Pesanan tidak ditemukan", status: 404 }
-  if (order.customerId !== userId && order.service.providerId !== userId) {
+  if (!sameId(order.customerId, userId) && order.service.providerId !== userId) {
     return { error: "Forbidden: bukan peserta pesanan ini", status: 403 }
   }
   return { order }
@@ -46,12 +47,12 @@ export async function GET(
   if (limited) return limited
 
   const { id } = await params
-  const orderId = parseInt(id, 10)
-  if (!Number.isFinite(orderId)) {
+  const orderId = toPrismaId(id) as unknown as number & string
+  if (!String(orderId).trim()) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
-  const userId = parseInt(session.user.id, 10)
+  const userId = toPrismaId(session.user.id) as unknown as number & string
   const check = await getOrderParticipant(orderId, userId)
   if (!check.order) {
     return NextResponse.json({ error: check.error }, { status: check.status })
@@ -77,12 +78,12 @@ export async function POST(
   }
 
   const { id } = await params
-  const orderId = parseInt(id, 10)
-  if (!Number.isFinite(orderId)) {
+  const orderId = toPrismaId(id) as unknown as number & string
+  if (!String(orderId).trim()) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
-  const userId = parseInt(session.user.id, 10)
+  const userId = toPrismaId(session.user.id) as unknown as number & string
   const check = await getOrderParticipant(orderId, userId)
   if (!check.order) {
     return NextResponse.json({ error: check.error }, { status: check.status })

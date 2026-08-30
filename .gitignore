@@ -39,3 +39,5 @@ Thumbs.db
 # Berkas kerja sementara
 *.bak
 image.png
+postgress/
+tsconfig.tsbuildinfo

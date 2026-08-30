@@ -59,6 +59,7 @@ function ParticleSphere() {
 
   useFrame((state) => {
     if (!points.current) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = state.clock.elapsedTime;
     points.current.rotation.y = t * 0.12;
     points.current.rotation.x = Math.sin(t * 0.15) * 0.12;

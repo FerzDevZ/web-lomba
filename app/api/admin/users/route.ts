@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { toPrismaId, sameId } from "@/lib/ids"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 
 export const dynamic = "force-dynamic"
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   }
 
   const admin = await prisma.user.findUnique({
-    where: { id: parseInt(session.user.id, 10) },
+    where: { id: toPrismaId(session.user.id) as unknown as number & string },
     select: { role: true },
   })
   if (admin?.role !== "ADMIN") {
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
       role: true,
       location: true,
       phone: true,
+      avatarUrl: true,
       createdAt: true,
       _count: {
         select: { services: true, ordersOrderCustomer: true },

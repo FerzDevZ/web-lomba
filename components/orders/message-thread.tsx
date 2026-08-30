@@ -9,10 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 type MessageItem = {
-  id: number
+  id: string | number
   content: string
   createdAt: string
-  sender: { id: number; name: string | null }
+  sender: { id: string | number; name: string | null }
 }
 
 const MAX_LENGTH = 500
@@ -21,7 +21,7 @@ export function MessageThread({
   orderId,
   otherName,
 }: {
-  orderId: number
+  orderId: string | number
   otherName: string
 }) {
   const { data: session } = useSession()
@@ -32,11 +32,12 @@ export function MessageThread({
   const { data: messages, isLoading } = useQuery<MessageItem[]>({
     queryKey: ["messages", orderId],
     queryFn: async () => {
-      const res = await fetch(`/api/orders/${orderId}/messages`)
+      const res = await fetch(`/api/orders/${orderId}/messages`, { cache: "no-store" })
       if (!res.ok) throw new Error("Gagal memuat pesan")
       return res.json()
     },
     refetchInterval: 8000,
+    refetchIntervalInBackground: false,
   })
 
   React.useEffect(() => {
@@ -46,8 +47,9 @@ export function MessageThread({
     })
   }, [messages?.length])
 
-  // Sebelumnya kegagalan POST diabaikan sepenuhnya: draft tetap terhapus dan
-  // pengguna yakin pesannya terkirim. Sekarang draft dipulihkan saat gagal.
+  const myId = Number(session?.user?.id)
+  const [optimistic, setOptimistic] = React.useState<MessageItem | null>(null)
+
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       const res = await fetch(`/api/orders/${orderId}/messages`, {
@@ -62,10 +64,12 @@ export function MessageThread({
       return res.json()
     },
     onSuccess: () => {
+      setOptimistic(null)
       setDraft("")
       queryClient.invalidateQueries({ queryKey: ["messages", orderId] })
     },
     onError: (error: Error, content) => {
+      setOptimistic(null)
       setDraft(content)
       toast.error("Pesan gagal terkirim", { description: error.message })
     },
@@ -74,10 +78,19 @@ export function MessageThread({
   const send = () => {
     const content = draft.trim()
     if (!content || sendMutation.isPending) return
-    sendMutation.mutate(content)
+    // Munculkan bubble langsung dengan status pending.
+    setOptimistic({
+      id: -Date.now(),
+      content,
+      createdAt: new Date().toISOString(),
+      sender: { id: myId || 0, name: session?.user?.name ?? "Anda" },
+    })
+    setDraft("")
+    sendMutation.mutate(content, {
+      onError: () => setOptimistic(null),
+    })
   }
 
-  const myId = Number(session?.user?.id)
   const remaining = MAX_LENGTH - draft.length
 
   return (
@@ -98,7 +111,7 @@ export function MessageThread({
       <div
         ref={scrollRef}
         aria-live="polite"
-        className="max-h-80 space-y-4 overflow-y-auto p-5"
+        className="max-h-80 space-y-4 overflow-y-auto p-5 lg:max-h-[50vh]"
       >
         {isLoading ? (
           // Skeleton berbentuk gelembung chat, bukan spinner di tengah:
@@ -118,14 +131,22 @@ export function MessageThread({
             <p className="mt-1 text-xs text-muted-foreground">
               Mulai percakapan untuk mengoordinasikan jadwal kerja.
             </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {["Halo, kapan bisa mulai?", "Alamat saya: ", "Bisa lihat foto hasil sebelumnya?"].map((q) => (
+                <button key={q} type="button" onClick={() => setDraft(q)} className="rounded-full border border-border bg-background px-3 py-1.5 text-xs hover:border-primary/40 hover:text-primary-strong">
+                  {q}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
-          messages?.map((msg) => {
+          [...(messages ?? []), ...(optimistic ? [optimistic] : [])].map((msg) => {
             const mine = msg.sender.id === myId
+            const pending = optimistic?.id === msg.id
             return (
               <div
                 key={msg.id}
-                className={cn("flex", mine ? "justify-end" : "justify-start")}
+                className={cn("flex", mine ? "justify-end" : "justify-start", pending && "opacity-70")}
               >
                 <div
                   className={cn(
@@ -156,7 +177,12 @@ export function MessageThread({
                         minute: "2-digit",
                       })}
                     </time>
-                    {mine && <Check className="h-3 w-3" aria-label="Terkirim" />}
+                    {mine &&
+                      (pending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" aria-label="Mengirim" />
+                      ) : (
+                        <Check className="h-3 w-3" aria-label="Terkirim" />
+                      ))}
                   </div>
                 </div>
               </div>

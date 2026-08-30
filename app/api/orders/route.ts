@@ -3,12 +3,24 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
+import { toPrismaId, sameId } from "@/lib/ids"
 
 export const dynamic = "force-dynamic"
 
 const createOrderSchema = z.object({
-  serviceId: z.coerce.number().int().positive(),
+  serviceId: z.union([z.string().min(1), z.coerce.number().int().positive()]),
   orderNotes: z.string().max(500).optional().nullable(),
+  // Alamat pelaksanaan layanan — wajib, inti marketplace jasa lokal (P0-1).
+  address: z.string().trim().min(5, "Alamat minimal 5 karakter").max(500, "Alamat maksimal 500 karakter"),
+  // Jadwal yang diinginkan customer; harus di masa depan bila diisi (P1-1).
+  deadline: z
+    .coerce
+    .date()
+    .optional()
+    .nullable()
+    .refine((d) => !d || d.getTime() > Date.now(), {
+      message: "Jadwal harus di masa depan",
+    }),
   paymentMethod: z.enum(["transfer", "ewallet", "cod"]).optional(),
 })
 
@@ -29,9 +41,10 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const validated = createOrderSchema.parse(body)
+    const serviceId = toPrismaId(String(validated.serviceId))
 
     const service = await prisma.service.findUnique({
-      where: { id: validated.serviceId },
+      where: { id: serviceId as unknown as number & string },
     })
     if (!service || service.status !== "ACTIVE") {
       return NextResponse.json(
@@ -40,8 +53,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const customerId = parseInt(session.user.id, 10)
-    if (service.providerId === customerId) {
+    const customerId = toPrismaId(session.user.id) as unknown as number & string
+    if (sameId(service.providerId, customerId)) {
       return NextResponse.json(
         { error: "Tidak dapat memesan jasa sendiri" },
         { status: 400 }
@@ -49,6 +62,7 @@ export async function POST(request: Request) {
     }
 
     const order = await prisma.order.create({
+      // @ts-ignore - prisma handles string|number id for mongo/sqlite
       data: {
         customerId,
         serviceId: service.id,
@@ -56,6 +70,8 @@ export async function POST(request: Request) {
         status: "PENDING",
         paymentMethod: validated.paymentMethod ?? null,
         orderNotes: validated.orderNotes ?? null,
+        address: validated.address,
+        deadline: validated.deadline ?? null,
       },
       include: {
         service: {
@@ -96,8 +112,9 @@ export async function GET(request: Request) {
   )
   if (limited) return limited
 
-  const customerId = parseInt(session.user.id, 10)
+  const customerId = toPrismaId(session.user.id) as unknown as number & string
   const orders = await prisma.order.findMany({
+    // @ts-ignore
     where: { customerId },
     include: {
       service: {

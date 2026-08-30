@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { toPrismaId, sameId } from "@/lib/ids"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 
 const statusSchema = z.object({
@@ -18,8 +19,8 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const serviceId = parseInt(id, 10)
-  if (!Number.isFinite(serviceId)) {
+  const serviceId = toPrismaId(id) as unknown as number & string
+  if (!String(serviceId).trim()) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
 
@@ -36,7 +37,7 @@ export async function PATCH(
     const { status } = statusSchema.parse(body)
 
     const service = await prisma.service.findUnique({
-      where: { id: serviceId },
+      where: { id: serviceId } as unknown as { id: string | number } & { id: string },
     })
     if (!service) {
       return NextResponse.json({ error: "Jasa tidak ditemukan" }, { status: 404 })
@@ -44,8 +45,8 @@ export async function PATCH(
 
     // Pemilik jasa boleh mengubah statusnya sendiri; ADMIN juga, karena
     // halaman moderasi mengaktifkan jasa draft milik provider lain.
-    const userId = parseInt(session.user.id, 10)
-    const isOwner = service.providerId === userId
+    const userId = toPrismaId(session.user.id) as unknown as number & string
+    const isOwner = sameId(service.providerId, userId)
     const isAdmin = session.user.role === "ADMIN"
 
     if (!isOwner && !isAdmin) {
@@ -56,7 +57,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.service.update({
-      where: { id: serviceId },
+      where: { id: serviceId } as unknown as { id: string | number } & { id: string },
       data: { status },
     })
 

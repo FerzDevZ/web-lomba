@@ -20,16 +20,16 @@ export function cityFromLocation(location: string | null | undefined): string | 
 
   if (segments.length === 0) return null
 
-  const city = segments[segments.length - 1]
+  const city = segments[segments.length - 1].trim()
 
   // Segmen yang masih berupa penggal jalan bukan nama kota. Kalau seluruh
   // string hanya alamat tanpa kota, lebih baik null daripada mencemari hitungan.
   if (/^(jl\.?|jalan|gg\.?|gang|no\.?|rt|rw|blok)\b/i.test(city)) return null
 
-  return city
+  return city.trim()
 }
 
-/** Jumlah kota unik dari daftar lokasi mentah, case-insensitive. */
+/** Jumlah kota unik dari daftar lokasi mentah, case-insensitive & trim. */
 export function countUniqueCities(
   locations: (string | null | undefined)[]
 ): number {
@@ -37,7 +37,7 @@ export function countUniqueCities(
 
   for (const location of locations) {
     const city = cityFromLocation(location)
-    if (city) cities.add(city.toLowerCase())
+    if (city) cities.add(city.trim().toLowerCase())
   }
 
   return cities.size

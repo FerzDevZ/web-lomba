@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { PlusCircle, LayoutDashboard, MessageCircle } from "lucide-react"
 import { auth, signOut } from "@/lib/auth"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MobileMenu } from "@/components/layout/mobile-menu"
@@ -32,7 +32,7 @@ export default async function Navbar() {
         <nav className="ml-auto flex items-center gap-1.5 md:gap-2">
           <Link
             href="/services"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:block"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:block"
           >
             Jelajahi
           </Link>
@@ -45,20 +45,32 @@ export default async function Navbar() {
               <Link href="/dashboard" className="hidden sm:block">
                 <Button variant="outline" size="sm" aria-label="Buka dashboard">
                   <LayoutDashboard aria-hidden="true" />
-                  <span className="hidden lg:inline">Dashboard</span>
+                  <span className="hidden md:inline">Dashboard</span>
                 </Button>
               </Link>
-              <Link href="/dashboard/provider/buka-jasa" className="hidden sm:block">
-                <Button size="sm" className="shadow-glow" aria-label="Buka jasa baru">
-                  <PlusCircle aria-hidden="true" />
-                  <span className="hidden lg:inline">Buka Jasa</span>
-                </Button>
-              </Link>
+              {(session?.user.role === "PROVIDER" || session?.user.role === "ADMIN") ? (
+                <Link href="/dashboard/provider/buka-jasa" className="hidden sm:block">
+                  <Button size="sm" className="h-9 px-4 font-bold shadow-glow" aria-label="Buka jasa baru">
+                    <PlusCircle aria-hidden="true" />
+                    <span className="hidden md:inline">Buka Jasa</span>
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/services" className="hidden sm:block">
+                  <Button size="sm" variant="outline" className="h-9 px-4 font-semibold" aria-label="Jelajahi jasa">
+                    <span className="hidden md:inline">Jelajahi Jasa</span>
+                  </Button>
+                </Link>
+              )}
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                  <AvatarFallback className="bg-primary/15 text-sm font-bold text-primary-strong">
-                    {(session.user.name ?? "U").charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  {session.user.image ? (
+                    <AvatarImage src={session.user.image} alt={session.user.name ?? "User"} />
+                  ) : (
+                    <AvatarFallback className="bg-primary/15 text-sm font-bold text-primary-strong">
+                      {(session.user.name ?? "U").charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <form
                   action={async () => {

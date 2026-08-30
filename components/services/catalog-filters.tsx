@@ -5,6 +5,7 @@ import { SlidersHorizontal, MapPin, Star, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { PROVINCES, LOCATION_SUGGESTIONS } from "@/lib/provinces"
 
 export type CatalogFilters = {
   category: string
@@ -15,7 +16,7 @@ export type CatalogFilters = {
 }
 
 export type CategoryOption = {
-  id: number
+  id: string | number
   name: string
   slug: string
   _count: { services: number }
@@ -102,7 +103,7 @@ export function CatalogFilterPanel({
       </div>
 
       <div>
-        <p className="mb-3 text-sm font-medium text-muted-foreground">Lokasi</p>
+        <p className="mb-3 text-sm font-medium text-muted-foreground">Lokasi <span className="text-xs font-normal text-muted-foreground/70">(38 provinsi)</span></p>
         <div className="relative">
           <MapPin
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -110,13 +111,33 @@ export function CatalogFilterPanel({
           />
           <Input
             type="text"
-            placeholder="Kota, mis. Jakarta"
+            placeholder="Kota/provinsi, mis. Bangka Belitung"
             value={location}
             onChange={(e) => onChange({ location: e.target.value })}
             className="pl-9"
             aria-label="Filter lokasi"
+            list="lokasi-list"
+            autoComplete="off"
           />
+          <datalist id="lokasi-list">
+            {LOCATION_SUGGESTIONS.slice(0, 40).map((loc) => (
+              <option key={loc} value={loc} />
+            ))}
+          </datalist>
         </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {["Kepulauan Bangka Belitung", "Kepulauan Riau", "Bali", "Papua", "Aceh"].map((prov) => (
+            <button
+              key={prov}
+              type="button"
+              onClick={() => onChange({ location: prov })}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${location === prov ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+            >
+              {prov.split(" ").slice(-1)[0]}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-2xs text-muted-foreground">Contoh: ketik "Bangka" untuk Pangkal Pinang</p>
       </div>
 
       <div>
@@ -124,25 +145,49 @@ export function CatalogFilterPanel({
           Rentang Harga
         </p>
         <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            inputMode="numeric"
-            placeholder="Min"
-            value={minPrice}
-            onChange={(e) => onChange({ minPrice: e.target.value })}
-            aria-label="Harga minimum"
-          />
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Rp</span>
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Min"
+              value={minPrice}
+              onChange={(e) => onChange({ minPrice: e.target.value })}
+              aria-label="Harga minimum"
+              className="pl-7"
+            />
+          </div>
           <span className="text-muted-foreground" aria-hidden>
             –
           </span>
-          <Input
-            type="number"
-            inputMode="numeric"
-            placeholder="Max"
-            value={maxPrice}
-            onChange={(e) => onChange({ maxPrice: e.target.value })}
-            aria-label="Harga maksimum"
-          />
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Rp</span>
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Max"
+              value={maxPrice}
+              onChange={(e) => onChange({ maxPrice: e.target.value })}
+              aria-label="Harga maksimum"
+              className="pl-7"
+            />
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {[
+            { label: "<100rb", min: "", max: "100000" },
+            { label: "100-300rb", min: "100000", max: "300000" },
+            { label: "300rb+", min: "300000", max: "" },
+          ].map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => onChange({ minPrice: p.min, maxPrice: p.max })}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${minPrice===p.min && maxPrice===p.max ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -184,16 +229,51 @@ export function CatalogFilterDrawer({
   onOpenChange: (open: boolean) => void
   resultCount: number
 } & React.ComponentProps<typeof CatalogFilterPanel>) {
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
+
   React.useEffect(() => {
     if (!open) return
+    previousFocus.current = document.activeElement as HTMLElement | null
     document.body.style.overflow = "hidden"
+
+    // Fokus elemen interaktif pertama di dalam drawer setelah mount.
+    const frame = requestAnimationFrame(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      first?.focus()
+    })
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false)
+      if (e.key === "Escape") {
+        onOpenChange(false)
+        return
+      }
+      if (e.key !== "Tab" || !panelRef.current) return
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
+
     window.addEventListener("keydown", onKey)
     return () => {
+      cancelAnimationFrame(frame)
       document.body.style.overflow = ""
       window.removeEventListener("keydown", onKey)
+      previousFocus.current?.focus()
     }
   }, [open, onOpenChange])
 
@@ -207,11 +287,13 @@ export function CatalogFilterDrawer({
         onClick={() => onOpenChange(false)}
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Filter jasa"
         className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-3xl border-t border-border bg-background"
       >
+        <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-muted-foreground/20" aria-hidden />
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <span className="font-semibold">Filter</span>
           <button

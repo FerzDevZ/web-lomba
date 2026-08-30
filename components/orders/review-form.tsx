@@ -14,13 +14,24 @@ import { Label } from "@/components/ui/label"
 export function ReviewForm({
   busy,
   onSubmit,
+  defaultOpen = false,
 }: {
   busy: boolean
   onSubmit: (rating: number, comment: string) => void
+  defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
   const [comment, setComment] = useState("")
+
+  const RATING_LABELS: Record<number, string> = {
+    1: "Sangat kurang",
+    2: "Kurang",
+    3: "Cukup",
+    4: "Puas",
+    5: "Sangat puas",
+  }
 
   if (!open) {
     return (
@@ -47,30 +58,49 @@ export function ReviewForm({
           <div
             role="radiogroup"
             aria-label="Rating 1 sampai 5 bintang"
-            className="flex items-center gap-1"
+            className="flex flex-wrap items-center gap-1"
+            onMouseLeave={() => setHoverRating(0)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+                e.preventDefault()
+                setRating((r) => Math.min(5, (r || 0) + 1))
+              } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+                e.preventDefault()
+                setRating((r) => Math.max(1, r - 1))
+              }
+            }}
           >
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                role="radio"
-                aria-checked={star === rating}
-                onClick={() => setRating(star)}
-                aria-label={`${star} bintang`}
-                className="focus-ring rounded-lg p-0.5 transition-transform duration-fast hover:scale-110"
-              >
-                <Star
-                  className={`h-8 w-8 ${
-                    star <= rating
-                      ? "fill-rating text-rating"
-                      : "text-muted-foreground/40"
-                  }`}
-                  aria-hidden
-                />
-              </button>
-            ))}
-            <span className="ml-2 text-sm font-semibold">
-              {rating > 0 ? `${rating}/5` : "Pilih rating"}
+            {[1, 2, 3, 4, 5].map((star) => {
+              const active = star <= (hoverRating || rating)
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  role="radio"
+                  aria-checked={star === rating}
+                  tabIndex={star === rating || (rating === 0 && star === 1) ? 0 : -1}
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onFocus={() => setHoverRating(star)}
+                  onBlur={() => setHoverRating(0)}
+                  aria-label={`${star} bintang — ${RATING_LABELS[star]}`}
+                  className="focus-ring rounded-lg p-0.5 transition-all duration-fast hover:scale-110"
+                >
+                  <Star
+                    className={`h-8 w-8 transition-colors duration-fast ${
+                      active ? "fill-rating text-rating" : "text-muted-foreground/40"
+                    }`}
+                    aria-hidden
+                  />
+                </button>
+              )
+            })}
+            <span className="ml-2 min-w-28 text-sm font-semibold tabular-nums">
+              {hoverRating
+                ? `${hoverRating}/5 — ${RATING_LABELS[hoverRating]}`
+                : rating > 0
+                  ? `${rating}/5 — ${RATING_LABELS[rating]}`
+                  : "Arahkan atau pilih rating"}
             </span>
           </div>
 

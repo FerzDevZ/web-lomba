@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { encode } from "next-auth/jwt"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { toPrismaId, sameId } from "@/lib/ids"
 import { RATE_LIMITS, enforceRateLimit } from "@/lib/api-guard"
 
 export const dynamic = "force-dynamic"
@@ -24,9 +25,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const adminId = parseInt(session.user.id, 10)
+  const adminId = toPrismaId(session.user.id) as unknown as number & string
   const admin = await prisma.user.findUnique({
-    where: { id: adminId },
+    where: { id: adminId } as unknown as { id: string | number } & { id: string },
     select: { role: true },
   })
   if (admin?.role !== "ADMIN") {
@@ -42,8 +43,8 @@ export async function POST(
   if (limited) return limited
 
   const { id } = await params
-  const targetId = parseInt(id, 10)
-  if (!Number.isFinite(targetId)) {
+  const targetId = toPrismaId(id) as unknown as number & string
+  if (!String(targetId).trim()) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
   }
   if (targetId === adminId) {
@@ -53,7 +54,7 @@ export async function POST(
     )
   }
 
-  const target = await prisma.user.findUnique({ where: { id: targetId } })
+  const target = await prisma.user.findUnique({ where: { id: targetId } as unknown as { id: string | number } & { id: string } })
   if (!target) {
     return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 })
   }

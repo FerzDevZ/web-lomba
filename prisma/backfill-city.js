@@ -27,10 +27,10 @@ function cityFromLocation(location) {
 
   if (segments.length === 0) return null
 
-  const city = segments[segments.length - 1]
+  const city = segments[segments.length - 1].trim()
   if (STREET_PREFIX.test(city)) return null
 
-  return city
+  return city.trim()
 }
 
 async function main() {
@@ -49,7 +49,7 @@ async function main() {
       const parsed = cityFromLocation(user.location)
       // Disimpan lowercase: pencocokan filter jadi konsisten tanpa bergantung
       // pada `mode: "insensitive"` yang tak didukung SQLite.
-      const next = parsed ? parsed.toLowerCase() : null
+      const next = parsed ? parsed.trim().toLowerCase() : null
 
       if (user.location && !parsed) unresolved++
       if (user.city !== next) updates.push({ id: user.id, city: next, from: user.location })
@@ -63,7 +63,7 @@ async function main() {
       users
         .map((u) => cityFromLocation(u.location))
         .filter(Boolean)
-        .map((c) => c.toLowerCase())
+        .map((c) => c.trim().toLowerCase())
     )
     console.log(`Kota unik terdeteksi : ${cities.size} — ${[...cities].sort().join(", ")}`)
 

@@ -5,7 +5,14 @@ import { PageShell } from "@/components/layout/page-shell"
 export default function Loading() {
   return (
     <PageShell className="py-10">
-      <Skeleton className="h-5 w-40" />
+      <div className="flex items-center justify-center gap-2">
+        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="h-px w-8" />
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-px w-8" />
+        <Skeleton className="h-6 w-16 rounded-full" />
+      </div>
+      <Skeleton className="mt-6 h-5 w-40" />
       <Skeleton className="mt-6 h-9 w-72" />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">

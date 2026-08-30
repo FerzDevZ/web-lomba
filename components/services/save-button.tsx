@@ -16,7 +16,7 @@ export function SaveButton({
   variant = "outline",
   className,
 }: {
-  serviceId: number
+  serviceId: string | number
   size?: "default" | "lg" | "icon" | "sm"
   variant?: "outline" | "ghost" | "default"
   className?: string
@@ -31,7 +31,7 @@ export function SaveButton({
   useEffect(() => {
     let active = true
     if (status !== "authenticated") return
-    fetch(`/api/saved?id=${serviceId}`)
+    fetch(`/api/saved?id=${serviceId}`, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (active && data) {
@@ -51,6 +51,11 @@ export function SaveButton({
       return
     }
     if (loading) return
+    // Optimistic flip — tombol terasa instan; rollback bila gagal.
+    const prev = saved
+    const wasChecked = checked
+    setSaved(!saved)
+    setChecked(true)
     setLoading(true)
     try {
       const res = await fetch("/api/saved", {
@@ -61,18 +66,21 @@ export function SaveButton({
       if (res.ok) {
         const data = await res.json()
         setSaved(data.saved)
-        setChecked(true)
         toast.success(data.saved ? "Jasa disimpan" : "Jasa dihapus dari simpanan", {
           description: data.saved
             ? "Temukan di dashboard Anda nanti."
             : "Jasa dihapus dari daftar simpanan.",
         })
       } else {
+        setSaved(prev)
+        setChecked(wasChecked)
         toast.error("Gagal menyimpan", {
           description: "Terjadi kesalahan. Coba lagi nanti.",
         })
       }
     } catch {
+      setSaved(prev)
+      setChecked(wasChecked)
       toast.error("Gagal menyimpan", {
         description: "Terjadi kesalahan jaringan.",
       })

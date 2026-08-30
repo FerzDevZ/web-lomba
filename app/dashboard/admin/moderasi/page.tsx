@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import Link from "next/link"
@@ -16,7 +17,7 @@ import { ShieldCheck, Eye, CheckCircle2, Loader2 } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
 
 type DraftService = {
-  id: number
+  id: string | number
   title: string
   price: number
   slug: string

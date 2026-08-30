@@ -7,11 +7,32 @@ import { Button } from "@/components/ui/button"
 
 export function MobileMenu({ session }: { session: boolean }) {
   const [open, setOpen] = React.useState(false)
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
 
   React.useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : ""
+    if (!open) return
+    previousFocus.current = document.activeElement as HTMLElement | null
+    document.body.style.overflow = "hidden"
+    const frame = requestAnimationFrame(() => {
+      panelRef.current?.querySelector<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')?.focus()
+    })
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+      if (e.key !== "Tab" || !panelRef.current) return
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+    window.addEventListener("keydown", onKey)
     return () => {
+      cancelAnimationFrame(frame)
       document.body.style.overflow = ""
+      window.removeEventListener("keydown", onKey)
+      previousFocus.current?.focus()
     }
   }, [open])
 
@@ -35,6 +56,7 @@ export function MobileMenu({ session }: { session: boolean }) {
             onClick={() => setOpen(false)}
           />
           <div
+            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-label="Menu navigasi"

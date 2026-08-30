@@ -34,16 +34,20 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Deduplicate and format
-    const uniqueSuggestions = Array.from(
-      new Set(suggestions.map(s => s.title))
-    ).slice(0, 6)
+    // Deduplicate by title, keep first slug (P1-10)
+    const seen = new Set<string>()
+    const deduped: { title: string; slug: string }[] = []
+    for (const s of suggestions) {
+      const key = s.title.trim().toLowerCase()
+      if (!seen.has(key)) {
+        seen.add(key)
+        deduped.push(s)
+      }
+      if (deduped.length >= 6) break
+    }
 
     return NextResponse.json({
-      suggestions: uniqueSuggestions.map(title => ({
-        title,
-        slug: suggestions.find(s => s.title === title)?.slug || "",
-      })),
+      suggestions: deduped,
     })
   } catch (error) {
     console.error("Search suggestions error:", error)

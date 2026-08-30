@@ -92,13 +92,18 @@ function NavLinks({
   )
 }
 
-function UserCard({ userName, role }: { userName: string | null; role: string }) {
+function UserCard({ userName, role, avatarUrl }: { userName: string | null; role: string; avatarUrl?: string | null }) {
   return (
     <div className="border-t border-border p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-semibold text-primary-strong">
-          {(userName ?? "U").charAt(0).toUpperCase()}
-        </div>
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt={userName ?? "User"} className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-border" />
+        ) : (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-semibold text-primary-strong">
+            {(userName ?? "U").charAt(0).toUpperCase()}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{userName ?? "Pengguna"}</div>
           <div className="text-xs text-muted-foreground">
@@ -122,15 +127,19 @@ function UserCard({ userName, role }: { userName: string | null; role: string })
 export function DashboardShell({
   role,
   userName,
+  avatarUrl,
   children,
 }: {
   role: string
   userName: string | null
+  avatarUrl?: string | null
   children: React.ReactNode
 }) {
   const pathname = usePathname()
   const items = NAV_BY_ROLE[role] ?? NAV_BY_ROLE.CUSTOMER
   const [drawerOpen, setDrawerOpen] = React.useState(false)
+  const panelRef = React.useRef<HTMLElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
 
   // Tutup drawer saat rute berubah — tanpa ini drawer tetap terbuka
   // menutupi halaman baru setelah navigasi.
@@ -140,14 +149,27 @@ export function DashboardShell({
 
   React.useEffect(() => {
     if (!drawerOpen) return
+    previousFocus.current = document.activeElement as HTMLElement | null
     document.body.style.overflow = "hidden"
+    const frame = requestAnimationFrame(() => {
+      panelRef.current?.querySelector<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')?.focus()
+    })
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setDrawerOpen(false)
+      if (e.key !== "Tab" || !panelRef.current) return
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
     }
     window.addEventListener("keydown", onKey)
     return () => {
+      cancelAnimationFrame(frame)
       document.body.style.overflow = ""
       window.removeEventListener("keydown", onKey)
+      previousFocus.current?.focus()
     }
   }, [drawerOpen])
 
@@ -166,7 +188,7 @@ export function DashboardShell({
           <NavLinks items={items} pathname={pathname} />
         </nav>
 
-        <UserCard userName={userName} role={role} />
+        <UserCard userName={userName} role={role} avatarUrl={avatarUrl} />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -197,6 +219,7 @@ export function DashboardShell({
               onClick={() => setDrawerOpen(false)}
             />
             <aside
+              ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-label="Navigasi dashboard"
@@ -224,7 +247,7 @@ export function DashboardShell({
                 />
               </nav>
 
-              <UserCard userName={userName} role={role} />
+              <UserCard userName={userName} role={role} avatarUrl={avatarUrl} />
             </aside>
           </div>
         )}

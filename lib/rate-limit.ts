@@ -52,6 +52,8 @@ export function consume(key: string, rule: RateLimitRule): RateLimitResult {
   const refillPerMs = limit / windowMs
 
   if (buckets.size > MAX_TRACKED_KEYS) sweep(now, windowMs)
+  // Juga sapu periodik meski belum 10k — cegah stale entries menumpuk lama (P2-6)
+  else if (now - lastSweep > windowMs * 2) sweep(now, windowMs)
 
   const existing = buckets.get(key)
   const bucket: Bucket = existing ?? { tokens: limit, updatedAt: now }

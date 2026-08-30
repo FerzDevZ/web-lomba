@@ -17,6 +17,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)", "Georgia", "serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -105,9 +106,9 @@ const config: Config = {
         slow: "450ms",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(12,10,9,.04), 0 8px 24px rgba(12,10,9,.06)",
+        card: "0 1px 2px rgba(12,10,9,.04), 0 4px 12px rgba(12,10,9,.07), 0 12px 32px rgba(12,10,9,.10)",
         "card-lg":
-          "0 2px 4px rgba(12,10,9,.05), 0 16px 40px rgba(12,10,9,.10)",
+          "0 4px 12px rgba(12,10,9,.08), 0 16px 40px rgba(12,10,9,.12)",
         "card-dark": "0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.5)",
         // Glow diturunkan dari token --primary, bukan rgba oranye tetap —
         // kalau warna brand berubah, glow ikut tanpa edit manual.
