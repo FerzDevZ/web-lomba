@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,7 +41,6 @@ function getSafeCallbackUrl(raw: string | null): string {
 }
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
   const callbackUrl = getSafeCallbackUrl(rawCallbackUrl)
@@ -56,24 +55,35 @@ function LoginForm() {
     setLoading(true)
     setError("")
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    })
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      })
 
-    if (result?.error) {
-      setError("Email atau password salah.")
+      // signIn dengan redirect:false bisa return undefined bila getProviders() gagal
+      // (client langsung window.location.href ke /api/auth/error). Anggap error.
+      if (!result || result.error) {
+        setError("Email atau password salah.")
+        setLoading(false)
+        return
+      }
+
+      // NextAuth dengan redirect:false butuh hard navigation agar middleware baca cookie baru.
+      // result.url = "https://host/dashboard" atau null; fallback ke callbackUrl yang sudah safe.
+      // Raw result.url tetap divalidasi via getSafeCallbackUrl untuk cegah open-redirect.
+      const dest = getSafeCallbackUrl(result.url ?? callbackUrl)
+      // href dan assign sama-sama hard navigation; href dipilih karena tidak terhalang
+      // oleh beberapa content-security / popup blocker dan konsisten dengan signIn redirect:true.
+      window.location.href = dest
+      // jangan setLoading(false) — biarkan spinner sampai browser unload, cegah double-submit
+    } catch (err) {
+      console.error("[login] signIn failed", err)
+      setError("Gagal masuk. Periksa koneksi dan coba lagi.")
       setLoading(false)
-      return
     }
-
-    // NextAuth dengan redirect:false kadang tidak set cookie untuk router.push (RSC cache).
-    // Paksa hard navigation agar middleware baca cookie baru — hindari muter terus.
-    // Validasi open-redirect: hanya izinkan same-origin
-    const dest = getSafeCallbackUrl(result?.url ?? callbackUrl)
-    window.location.assign(dest)
   }
 
   return (
