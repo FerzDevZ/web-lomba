@@ -80,7 +80,12 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secureCookie: request.url.startsWith("https://"),
   })
+  // Debug: log token presence for /dashboard (hapus setelah fix)
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/login")) {
+    console.log(`[middleware] ${pathname} hasToken=${!!token} role=${(token as unknown as {role?:string})?.role} cookies=${request.cookies.getAll().map(c=>c.name).join(",")}`);
+  }
 
   // Belum login, arahkan ke halaman masuk
   if (!isPublic && !token) {
