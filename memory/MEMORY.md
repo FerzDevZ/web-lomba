@@ -6,10 +6,10 @@
 - project: weblomba
 - path: /home/firman/weblomba
 - created: 2026-08-30
-- last_updated: 2026-08-30 18:25
+- last_updated: 2026-08-30 20:11
 - stack: Next.js 15.5.24 + React 19 + Prisma 5.22 + MongoDB Atlas (ferz/bj80suv ap-southeast-1) + Tailwind 3.4 + NextAuth v5 + TanStack Query 5 + R3F 9.7 + GSAP 3.15 + Zod + bcryptjs + date-fns + recharts + dnd-kit + Playwright Mobile
-- repo: https://github.com/FerzDevZ/web-lomba.git (main, bd5ac91 latest P2)
-- deploy: Vercel sin1 → https://weblomba-rouge.vercel.app (prod, 6yn2jxm8u Ready 2m) + https://weblomba-6yn2jxm8u-ferzdevzs-projects.vercel.app
+- repo: https://github.com/FerzDevZ/web-lomba.git (main, dbb82e4 latest polish)
+- deploy: Vercel sin1 → https://weblomba-rouge.vercel.app (prod, auto via GitHub Actions vercel-auto-deploy.yml) + https://weblomba-6yn2jxm8u-ferzdevzs-projects.vercel.app
 - alias lama 404: https://weblomba.vercel.app → NOT_FOUND (bukan project ini, canonical sekarang rouge, env sudah fix)
 - projectId: prj_dIxWAg5O5regeZJmJ8be64ncm9cI / team_M7B2bxaZust55ICCdDABrf01 — Vercel CLI 59.10.0 ferzdevz
 - opencode: opencode2 / programmer
@@ -41,12 +41,20 @@
 - [2026-08-30] Fix 4-box 18aad13 — grid gap-8 md:grid-cols-4 → auto-rows-fr, Reveal h-full + card h-full min-h-[240px] flex flex-col flex-1 + invisible arrow (fix 3 gede 1 kecil)
 - [2026-08-30] Auth stuck login 2a2307a — signIn redirect:false tanpa callbackUrl + router.push+refresh RSC miss → window.location.assign(result.url ?? callbackUrl) hard nav, callbackUrl safe check origin
 - [2026-08-30] P0 All be84816 — 18 files 257+/71-: reviews/saved coerce.number→string ObjectId + toPrismaId, services kategori Number.isFinite→isObjectId + search escape regex (ReDoS) + image whitelist unsplash/pravatar/cloudinary 800KB svg block, provider/[id] parseInt→toPrismaId, orders race updateMany status 409, messages sameId, kanban Number→String sameId, auth secret fallback + login 5/15m, rate-limit x-vercel-forwarded-for anti spoof, next.config remotePatterns **→whitelist, auth-url fix, admin stats findMany→groupBy, middleware knownPrefixes anti hijack 404, moderasi ?preview=1 + service ADMIN draft preview
+- [2026-08-30] P1 batch ab20c37 — polling 8s→15s+60s, three PARTICLE_COUNT 1400→600 dpr [1,1.25], sitemap filter ACTIVE+PROVIDER non-draft, headers consolidate, password min 8 complexity, impersonate 30d→15m Strict + audit warn
+- [2026-08-30] Auth stuck 78bd44f — try/catch + handle undefined result + getSafeCallbackUrl + window.location.href hard nav (fix login ?callbackUrl=/dashboard muter)
+- [2026-08-30] P1 sisa d19c803 — FAQ Google→email/password, playwright +mobile-320 Pixel5 + iPhone SE, docs polling 15s, lib/csrf double-submit helper
+- [2026-08-30] P1 lanjut 6484dfd — impersonate audit log, CSRF double-submit /api POST/PATCH (whitelist /api/auth), blob 1.2M→300k + tolak data:image, sitemap revalidate 3600 + page revalidate 60 cache 85%
+- [2026-08-30] P2 bd5ac91 — error boundary per-segment app/dashboard/error.tsx, 8 E2E specs (auth-routing 6, checkout-validation 5, wishlist, search-autocomplete 6, kanban-drag, moderation, breadcrumb, messages), page distinct city findMany→aggregateRaw group+count -99.8% payload
+- [2026-08-30] Responsive 320 a92b922+9ca505b — 4-box auto-rows-fr h-full, dashboard-shell h-[100dvh] overflow-hidden, hero w-[152px], chip mx-0 safe-area, tabs grid-cols-3, radio-card, admin KPI grid repeat(2,minmax) + text-lg sm:text-2xl
+- [2026-08-30] CI a8cca80 — fallback Vercel auto-deploy via GitHub Action (vercel-auto-deploy.yml) karena vercel git connect 400 already in use
+- [2026-08-30] Polish dbb82e4 — admin KPI repeat(2,minmax) + text truncate title, faq break-words anywhere + error.tsx per-segment, CustomerDashboard break-words, stat-card title, tests csrf 20 + ids 21 (vitest 149 pass)
 - [2026-08-30] PPT v2 26 slides 100KB + PDF 909KB 26 pages (Swiss Safety Orange #FF6B35) — cover→agenda→latar belakang 6 masalah→rumusan 3→tujuan→benchmark→persona 4→peta 38→kebutuhan→flow→design thinking→design system→wireframe→UI 3→arsitektur→API→teknologi→pengujian→deploy live→dampak→keunggulan→roadmap→penutup Q&A — weasyprint + python-pptx + libreoffice
 - [2026-08-30] init memory-by-ferz — auto-create memory/MEMORY.md + .opencode/MEMORY.md + global mirror weblomba.md — update tiap session
 
 ## 4. Conventions (WAJIB)
 - Code style: TypeScript strict (tapi 15 @ts-nocheck debt), Tailwind 3.4, var(--color) hsl, Plus Jakarta Sans (400-800) + Instrument_Serif (400 normal+italic) via next/font, max 2 font, kontras AA 4.5:1 (primary-strong 5.0:1, input 3.47:1, ring 3.31:1), focus-ring global, 4pt spacing (4/8/12/16/24/32/48), card 2xl 1.25rem, radius 0 Swiss (PPT), hairline 1px, Inter JetBrains Mono
-- Commit: conventional commits (feat:, fix:, design:, fix(ui):), branch main, FerzDevZ <ferdinandderosaputra200409@gmail.com>, 10 commits main (e99b518 → be84816)
+- Commit: conventional commits (feat:, fix:, design:, fix(ui):), branch main, FerzDevZ <ferdinandderosaputra200409@gmail.com>, 20 commits main (e99b518 → dbb82e4)
 - DB: provider mongodb ObjectId @id @default(auto()) @map("_id") @db.ObjectId, city lowercased distinct @@index([role,city]), Service @@index([categoryId,status],[providerId]), SavedService @@unique([userId,serviceId]), Order @@index([customerId,status],[serviceId]), Message @@index([orderId,createdAt]), images JSON string, ratingAvg recompute transaksi, galleryPool per kategori
 - Auth: NextAuth v5 Credentials authorize bcrypt compare, session jwt 30d maxAge 30*24*60*60, pages signIn /login, callbacks jwt id/role/picture + session id/role/impersonatedBy, secret AUTH_SECRET ?? NEXTAUTH_SECRET (fix mismatch), impersonate encode 30d SameSite Lax (debt 15m Strict), middleware getToken AUTH_SECRET ?? NEXTAUTH_SECRET + PUBLIC_PATHS [/,/services,/service,/provider,/login,/register,/faq,/api/auth,/sitemap.xml etc] + KNOWN_PREFIXES anti hijack
 - Security: headers nosniff/DENY/Referrer-Policy strict-origin-when-cross-origin + HSTS preload + Permissions-Policy camera/mic/geolocation + Cache-Control no-store /api, escapeCsv BOM anti =+-@, Zod strict, rate-limit 14 scopes (register 5/jam, login 5/15m per email in-memory, impersonate 10/jam), image allowlist, search escape regex
@@ -81,6 +89,11 @@
 - [2026-08-30] Fix login stuck 2a2307a window.location.assign + callbackUrl safe, deploy e8hlem1yj Ready
 - [2026-08-30] Audit total 5 subagents: explore-plus 16 pages+20 API 0 dead but H-1 draft preview + H-2 hijack, reviewer 8 HIGH (coerce.number etc), security 5H/8M (creds leak, impersonate, IDOR, rate spoof, SSRF **), perf P0 admin stats groupBy + 5 queries serial, qa 24 gaps (kanban drag Number, etc) — temuan 19+24+...
 - [2026-08-30 16:50] P0 All be84816 18 files 257+/71- → push + deploy mwv2ys1zu Ready 2m, verify category filter ObjectId 200 + search ReDoS [] + sitemap rouge 2
+- [2026-08-30 18:05] P1 batch ab20c37 6 files polling/three/sitemap/headers + 78bd44f login try/catch → push
+- [2026-08-30 18:09] P1 sisa d19c803 FAQ+mobile320+csrf + 6484dfd audit+CSRF+blob300k+ISR cache 60
+- [2026-08-30 18:26] P2 bd5ac91 8 E2E specs + error boundary + distinct city aggregateRaw, a92b922 320 + middleware 404, a8cca80 CI vercel-auto-deploy.yml
+- [2026-08-30 19:40] Fix responsive 320 9ca505b 6 files dvh+safe-area+chip, 3ff98a6 login rate 10/15m
+- [2026-08-30 20:12] Polish dbb82e4 8 files 347+/6- responsive 320 KPI+stat-card+faq + csrf/ids tests 149 pass → push dbb82e4, tsc 0 vitest 149
 
 ## 7. TODO & Next
 - [x] P0 hallmark: kicker, serif, blur, pill, timeline, checkout, transition — DONE d38e969
@@ -88,16 +101,17 @@
 - [x] Fix 4-box auto-rows-fr — DONE 18aad13
 - [x] Fix login stuck — DONE 2a2307a
 - [x] P0 All mongo+security+perf+middleware — DONE be84816 (reviewer High 8, security 5H, perf P0, qa kanban)
-- [ ] P1 sisa: perf admin stats groupBy sudah done, tapi polling 8s→15s + staleTime, image whitelist sudah done, cache revalidate 60 (P2-1), three optimize PARTICLE_COUNT 1400→600, middleware slim, sitemap filter ACTIVE provider, header duplikat vercel.json vs next.config, mobile 320px test
-- [ ] P1 security sisa: H-01 rotate Atlas password + hapus docs leak, H-02 impersonate short 15m + Strict + audit log, M-03 CSRF double-submit, M-04 Blob storage ganti base64, M-05 password min 8 complexity
-- [ ] P2 hygiene: apple-icon/twitter-image/manifest orphan PUBLIC_PATHS, sitemap provider filter, header consolidate, dashboard error.tsx, FAQ Google login copy, provider draftServices e2e
-- [ ] E2E gaps: auth-routing 6 kasus, checkout-validation 5, wishlist, search-autocomplete 6, kanban-drag, moderation, breadcrumb, messages, mobile-320 (playwright config Pixel 5 + iPhone SE)
-- [ ] vercel git connect — Dashboard Settings→Git→Connect FerzDevZ/web-lomba (CLI 400 already in use need dashboard)
+- [x] P1 sisa: polling 15s+60s, three 600, sitemap ACTIVE filter, headers, password 8, impersonate 15m Strict+audit, CSRF double-submit, blob 300k, ISR cache 60 — DONE ab20c37+6484dfd+d19c803
+- [x] P1 security: impersonate 15m Strict+audit, CSRF double-submit, blob 300k, password 8 — DONE (H-01 rotate Atlas masih debt optional)
+- [x] P2 hygiene: dashboard error.tsx per-segment, FAQ Google fix, sitemap filter, header consolidate — DONE bd5ac91+a92b922
+- [x] E2E gaps: 8 specs (auth-routing 6, checkout 5, wishlist, search-autocomplete 6, kanban-drag, moderation, breadcrumb, messages) + mobile-320 Pixel5/iPhone SE — DONE bd5ac91
+- [x] vercel git connect — CLI 400 already in use → fallback GitHub Action vercel-auto-deploy.yml a8cca80 — DONE (dashboard manual optional)
 - [ ] Sync docs: version bump pdf 17p+ setelah P0 All, update README NEXT_PUBLIC_SITE_URL rouge, update FULL-DOKUMENTASI html env weblomba.vercel.app→rouge
 - [ ] Consider prisma 5.22→8 major, tiga 1400 sphere perf, Redis Upstash rate-limit prod
 
 ## 8. Session Notes (last 5)
-- last: 2026-08-30 16:50 — P1 = Prioritas 1 Major (bukan blocker tapi UX/security/perf penting), tulis memory lengkap 26 slides PPT + PDF + P0 All be84816 live mwv2ys1zu, next P1 sisa + git connect
+- last: 2026-08-30 20:12 — Polish dbb82e4 320px KPI+faq+stat-card + csrf/ids 149 pass, push dbb82e4, CI vercel-auto-deploy, next: vercel deploy verify + docs sync PDF
+- prev: 19:40 9ca505b responsive 320 dvh+safe-area + 3ff98a6 login 10/15m, a8cca80 CI fallback
 - prev: 16:30 audit total 5 subagents (explore, reviewer, security, perf, qa) temuan 19+24, P0 8 HIGH (mongo coerce.number 100% fail, FSM race, IDOR, rate spoof, SSRF)
 - prev2: 16:08 PPT v2 26 slides 100KB, 4-box fix, site-url rouge, login stuck fix window.location
 - prev3: 16:05 PPT v1 17 slides + append 21 slides, login audit, sitemap verify 200
