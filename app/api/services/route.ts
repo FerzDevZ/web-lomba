@@ -111,21 +111,18 @@ const createServiceSchema = z.object({
   price: z.coerce.number().positive(),
   deliveryTimeDays: z.coerce.number().int().positive(),
   categoryId: z.string().min(1).refine((v) => /^[0-9a-fA-F]{24}$/.test(v) || /^\d+$/.test(v), "categoryId tidak valid"),
-  // Bisa URL https:// atau data:image/... dari upload device (auto-kompresi client), max ~800KB biner, tolak svg+xml
-  imageUrl: z.string().max(1_200_000).optional().or(z.literal('')).refine(
+  // Hanya URL https:// whitelist; tolak data:image untuk cegah bloat (max 300KB)
+  imageUrl: z.string().max(300_000, "Gambar >300KB").optional().or(z.literal('')).refine(
     (v) => {
       if (!v) return true
-      if (v.startsWith('data:image/')) {
-        if (v.includes('svg+xml')) return false
-        try { const b64 = v.split(',')[1] ?? ''; const len = Buffer.from(b64, 'base64').length; return len <= 800*1024 } catch { return false }
-      }
+      if (v.startsWith('data:image/')) return false
       try {
         const u = new URL(v); if (!['http:', 'https:'].includes(u.protocol)) return false
         const allowed = ['images.unsplash.com','i.pravatar.cc','res.cloudinary.com','cdn.servislokal.id']
         return allowed.some(h => u.hostname === h || u.hostname.endsWith('.' + h))
       } catch { return false }
     },
-    { message: 'URL gambar tidak valid atau host tidak diizinkan' }
+    { message: 'Gambar >300KB atau URL gambar tidak valid atau host tidak diizinkan' }
   ),
 })
 

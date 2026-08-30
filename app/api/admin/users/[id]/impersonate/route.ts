@@ -92,6 +92,14 @@ export async function POST(
     ok: true,
     user: { name: target.name, role: target.role },
   })
+  console.warn({
+    audit: "impersonate.start",
+    adminId: String(adminId),
+    targetId: String(targetId),
+    ip: request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    ua: request.headers.get("user-agent")?.slice(0, 120) ?? null,
+    ts: new Date().toISOString(),
+  })
   res.cookies.set(cookieName, token, {
     httpOnly: true,
     sameSite: "strict",

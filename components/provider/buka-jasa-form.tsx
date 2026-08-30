@@ -98,6 +98,7 @@ export function BukaJasaForm({ onCreated }: { onCreated: (id: string | number) =
     setIsCompressing(true)
     try {
       const dataUrl = await compressImage(file)
+      if (dataUrl.length > 300_000) throw new Error("Gambar >300KB, pilih yang lebih kecil")
       const before = (file.size / 1024).toFixed(0)
       const after = Math.round((dataUrl.length * 0.75) / 1024)
       set("imageUrl", dataUrl)

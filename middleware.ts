@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
+import { isCsrfValid } from "@/lib/csrf"
 
 // Halaman yang boleh diakses tanpa login
 const PUBLIC_PATHS = [
@@ -53,8 +54,17 @@ function isKnownPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Route API menangani autentikasi masing-masing
+  // CSRF check untuk /api/* state-changing, whitelist NextAuth yang punya CSRF sendiri
   if (pathname.startsWith("/api/")) {
+    const isAuthWhitelist = pathname.startsWith("/api/auth")
+    if (!isAuthWhitelist) {
+      const method = request.method.toUpperCase()
+      const isStateChanging =
+        method === "POST" || method === "PATCH" || method === "PUT" || method === "DELETE"
+      if (isStateChanging && isKnownPath(pathname) && !isCsrfValid(request)) {
+        return NextResponse.json({ error: "CSRF validation failed" }, { status: 403 })
+      }
+    }
     return NextResponse.next()
   }
 

@@ -61,9 +61,17 @@ export async function POST(request: Request) {
   })
 
   const res = NextResponse.json({ ok: true })
+  console.warn({
+    audit: "impersonate.end",
+    adminId: String(originalId),
+    targetId: String(session.user.id),
+    ip: request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    ua: request.headers.get("user-agent")?.slice(0, 120) ?? null,
+    ts: new Date().toISOString(),
+  })
   res.cookies.set(cookieName, token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: cookieName.startsWith("__Secure-"),
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
@@ -75,7 +83,7 @@ export async function POST(request: Request) {
     : "__Secure-authjs.session-token"
   res.cookies.set(otherName, "", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: otherName.startsWith("__Secure-"),
     path: "/",
     maxAge: 0,
