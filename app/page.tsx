@@ -195,7 +195,7 @@ export default async function HomePage() {
           </div>
         </Reveal>
 
-        <div className="grid gap-8 md:grid-cols-4">
+        <div className="grid auto-rows-fr gap-8 md:grid-cols-4">
           {[
             {
               icon: Search,
@@ -225,8 +225,8 @@ export default async function HomePage() {
             const Icon = s.icon;
             const isLast = i === 3;
             return (
-              <Reveal key={s.step} delay={i * 0.1}>
-                <div className="group relative rounded-3xl border border-border bg-card p-8 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:border-primary/30 hover:shadow-card-lg hover:-translate-y-0.5">
+              <Reveal key={s.step} delay={i * 0.1} className="h-full">
+                <div className="group relative flex h-full min-h-[240px] flex-col rounded-3xl border border-border bg-card p-8 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:border-primary/30 hover:shadow-card-lg hover:-translate-y-0.5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
                       <Icon className="h-5 w-5" />
@@ -235,16 +235,14 @@ export default async function HomePage() {
                   </div>
 
                   <h3 className="mt-5 text-xl font-bold leading-tight">{s.title}</h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2.5 flex-1 text-sm leading-relaxed text-muted-foreground">
                     {s.desc}
                   </p>
 
-                  {!isLast && (
-                    <div className="mt-6 hidden items-center gap-2 text-xs font-medium text-muted-foreground/60 md:flex" aria-hidden>
-                      <div className="h-px flex-1 bg-border" />
-                      <span>→</span>
-                    </div>
-                  )}
+                  <div className={`mt-6 hidden items-center gap-2 text-xs font-medium md:flex ${isLast ? "invisible" : "text-muted-foreground/60"}`} aria-hidden>
+                    <div className="h-px flex-1 bg-border" />
+                    <span>→</span>
+                  </div>
                 </div>
               </Reveal>
             );
