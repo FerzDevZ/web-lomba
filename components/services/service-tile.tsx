@@ -74,10 +74,10 @@ export function ServiceTile({
             aria-hidden
           />
         )}
-        <Badge className="absolute left-4 top-4 bg-card/90 text-foreground backdrop-blur">
+        <Badge className="absolute left-3 top-3 rounded-md bg-card/95 text-foreground shadow-sm">
           {service.category.name}
         </Badge>
-        <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 text-xs font-semibold backdrop-blur">
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-card/95 px-2 py-1 text-xs font-semibold shadow-sm">
           <Star className="h-3 w-3 fill-rating text-rating" aria-hidden />
           {service.ratingAvg > 0 ? service.ratingAvg.toFixed(1) : "Baru"}
           {service.totalReviews > 0 && (
@@ -112,7 +112,7 @@ export function ServiceTile({
             </span>
           )}
           {service.totalReviews > 10 && (
-            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-2xs font-semibold text-success">
+            <span className="ml-auto inline-flex items-center gap-1 rounded-md bg-success/10 px-1.5 py-0.5 text-2xs font-semibold text-success">
               ✓ Terverifikasi
             </span>
           )}

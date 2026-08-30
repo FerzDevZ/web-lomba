@@ -1,11 +1,83 @@
 "use client"
 
 import * as React from "react"
-import { SlidersHorizontal, MapPin, Star, X } from "lucide-react"
+import { SlidersHorizontal, MapPin, Star, X, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PROVINCES, LOCATION_SUGGESTIONS } from "@/lib/provinces"
+
+function LocationAutocomplete({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = React.useState(false)
+  const [active, setActive] = React.useState(0)
+  const wrapRef = React.useRef<HTMLDivElement>(null)
+  const filtered = React.useMemo(() => {
+    const q = value.trim().toLowerCase()
+    if (!q) return LOCATION_SUGGESTIONS.slice(0, 8)
+    return LOCATION_SUGGESTIONS.filter((loc) => loc.toLowerCase().includes(q)).slice(0, 8)
+  }, [value])
+  React.useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [open])
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) setOpen(true)
+    if (filtered.length === 0) return
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => (i + 1) % filtered.length) }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => (i - 1 + filtered.length) % filtered.length) }
+    if (e.key === "Enter" && open && filtered[active]) { e.preventDefault(); onChange(filtered[active]); setOpen(false) }
+    if (e.key === "Escape") setOpen(false)
+  }
+  return (
+    <div ref={wrapRef} className="relative">
+      <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <Input
+        type="text"
+        placeholder="Kota/provinsi, mis. Bangka Belitung"
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); setActive(0) }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={onKeyDown}
+        className="pl-9"
+        aria-label="Filter lokasi"
+        aria-expanded={open}
+        aria-controls="lokasi-suggest"
+        aria-autocomplete="list"
+        role="combobox"
+        autoComplete="off"
+      />
+      {open && (
+        <div id="lokasi-suggest" className="absolute left-0 right-0 top-full z-20 mt-1.5 overflow-hidden rounded-xl border border-border bg-card shadow-card-lg">
+          <ul role="listbox" className="py-1 max-h-56 overflow-auto">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-xs text-muted-foreground">Tidak ada lokasi untuk “{value}”</li>
+            ) : filtered.map((loc, i) => (
+              <li key={loc} role="option" aria-selected={i === active}>
+                <button
+                  type="button"
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => { onChange(loc); setOpen(false) }}
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${i === active ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"}`}
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="truncate">{loc}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="border-t border-border bg-muted/40 px-3 py-1.5 flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Search className="h-3 w-3" aria-hidden /> 38 provinsi</span>
+            <button type="button" onClick={() => { onChange(""); setOpen(false) }} className="font-medium text-primary-strong hover:underline">Hapus</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export type CatalogFilters = {
   category: string
@@ -104,27 +176,7 @@ export function CatalogFilterPanel({
 
       <div>
         <p className="mb-3 text-sm font-medium text-muted-foreground">Lokasi <span className="text-xs font-normal text-muted-foreground/70">(38 provinsi)</span></p>
-        <div className="relative">
-          <MapPin
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            type="text"
-            placeholder="Kota/provinsi, mis. Bangka Belitung"
-            value={location}
-            onChange={(e) => onChange({ location: e.target.value })}
-            className="pl-9"
-            aria-label="Filter lokasi"
-            list="lokasi-list"
-            autoComplete="off"
-          />
-          <datalist id="lokasi-list">
-            {LOCATION_SUGGESTIONS.slice(0, 40).map((loc) => (
-              <option key={loc} value={loc} />
-            ))}
-          </datalist>
-        </div>
+        <LocationAutocomplete value={location} onChange={(v) => onChange({ location: v })} />
         <div className="mt-2 flex flex-wrap gap-1.5">
           {["Kepulauan Bangka Belitung", "Kepulauan Riau", "Bali", "Papua", "Aceh"].map((prov) => (
             <button

@@ -174,10 +174,7 @@
     );
   }
 
-  /* Teks gradien brand untuk aksen angka/headline */
-  .text-gradient-orange {
-    @apply bg-clip-text text-transparent bg-brand-gradient;
-  }
+  /* deslop-ignore 02 — gradien teks dihapus, pakai solid primary-strong untuk AA 5:1 */
 
   /* Grid pattern latar (dark/light mengikuti tema) */
   .bg-grid {

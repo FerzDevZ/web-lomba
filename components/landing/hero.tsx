@@ -9,7 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Search, ShieldCheck, Star, ArrowRight } from "lucide-react";
 import { DURATION, GSAP_EASE, prefersReducedMotion } from "@/lib/motion";
 import { Counter } from "@/components/landing/counter";
-import { LOCATION_SUGGESTIONS } from "@/lib/provinces";
+import { HeroSearch } from "@/components/landing/hero-search";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -147,38 +147,9 @@ export function Hero({
           </p>
 
           {/* Search — command palette style */}
-          <form
-            data-hero-fade
-            action="/services"
-            className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2.5 shadow-card-lg transition-all focus-within:border-primary/50 focus-within:shadow-glow sm:p-3"
-          >
-            <Search
-              className="ml-3 h-5 w-5 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
-            <input
-              name="search"
-              aria-label="Cari jasa"
-              placeholder='Cari: Service AC, Pasang Listrik, Bersih Rumah...'
-              className="w-full bg-transparent px-2 py-3 text-sm outline-none placeholder:text-muted-foreground sm:text-base"
-              list="hero-search-list"
-              autoComplete="off"
-            />
-            <datalist id="hero-search-list">
-              {LOCATION_SUGGESTIONS.slice(0, 8).map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
-            <kbd className="hidden shrink-0 items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-2xs font-medium text-muted-foreground sm:inline-flex">
-              ⌘K
-            </kbd>
-            <button
-              type="submit"
-              className="focus-ring flex shrink-0 items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-all duration-base hover:brightness-110 active:scale-[0.98]"
-            >
-              Cari <ArrowRight className="h-4 w-4" aria-hidden />
-            </button>
-          </form>
+          <div data-hero-fade className="relative mt-8 max-w-xl">
+            <HeroSearch />
+          </div>
 
           {/* Pills kategori */}
           <div data-hero-fade className="mt-6 flex max-w-xl flex-wrap gap-2">
@@ -186,7 +157,7 @@ export function Hero({
               <Link
                 key={cat.slug}
                 href={`/services?category=${cat.id}`}
-                className="focus-ring rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors duration-base hover:border-primary/40 hover:text-primary-strong"
+                className="focus-ring rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-primary-strong"
               >
                 {cat.name}
               </Link>
@@ -204,12 +175,12 @@ export function Hero({
               <Link
                 key={loc.label}
                 href={`/services?location=${encodeURIComponent(loc.q)}`}
-                className="focus-ring rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="focus-ring rounded-lg bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
               >
                 {loc.label}
               </Link>
             ))}
-            <Link href="/services" className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-strong hover:bg-primary hover:text-primary-foreground transition-colors">
+            <Link href="/services" className="rounded-lg bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-strong hover:bg-primary hover:text-primary-foreground transition-colors">
               +{cityCount} kota
             </Link>
           </div>
@@ -248,7 +219,7 @@ export function Hero({
                 ukuran: di mobile inilah satu-satunya bukti sosial numerik. */}
             <div
               data-hero-float
-              className="glass absolute -left-2 top-[12%] w-38 rounded-2xl p-3.5 shadow-card-lg sm:-left-4 sm:top-[14%] sm:w-48 sm:p-4"
+              className="absolute -left-2 top-[12%] w-38 rounded-2xl border border-border bg-card/95 p-3.5 shadow-card-lg sm:-left-4 sm:top-[14%] sm:w-48 sm:p-4"
             >
               <div className="flex items-baseline gap-1">
                 <Star
@@ -271,7 +242,7 @@ export function Hero({
             {/* Kartu jumlah penyedia — ditempel ke tepi kanan-bawah cincin */}
             <div
               data-hero-float
-              className="glass absolute -right-2 bottom-[12%] w-38 rounded-2xl p-3.5 shadow-card-lg sm:-right-4 sm:bottom-[14%] sm:w-48 sm:p-4"
+              className="absolute -right-2 bottom-[12%] w-38 rounded-2xl border border-border bg-card/95 p-3.5 shadow-card-lg sm:-right-4 sm:bottom-[14%] sm:w-48 sm:p-4"
             >
               <div className="text-2xl font-extrabold tabular-nums text-primary-strong sm:text-3xl">
                 <Counter value={providerCount} suffix="+" />

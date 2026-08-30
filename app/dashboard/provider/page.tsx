@@ -236,9 +236,9 @@ export default async function ProviderDashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-sm font-medium text-muted-foreground">
+          <p className="mb-1 text-sm font-medium text-muted-foreground">
               Rating Rata-rata
-            </h2>
+            </p>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 fill-rating text-rating" aria-hidden />
             <span className="text-2xl font-bold tabular-nums">
@@ -250,9 +250,9 @@ export default async function ProviderDashboardPage() {
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-sm font-medium text-muted-foreground">
+          <p className="mb-1 text-sm font-medium text-muted-foreground">
               Total Pendapatan (Selesai)
-            </h2>
+            </p>
           <div className="text-2xl font-bold tabular-nums text-primary-strong">
             {formatIDR(revenue)}
           </div>

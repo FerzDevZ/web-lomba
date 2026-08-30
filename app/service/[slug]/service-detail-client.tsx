@@ -189,6 +189,13 @@ export default function ServiceDetailClient({
 
   return (
     <PageShell className="py-8">
+      <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-foreground transition-colors">Beranda</Link>
+        <span aria-hidden className="text-muted-foreground/50">/</span>
+        <Link href={`/services?category=${service.category.id}`} className="hover:text-foreground transition-colors">{service.category.name}</Link>
+        <span aria-hidden className="text-muted-foreground/50">/</span>
+        <span aria-current="page" className="truncate font-medium text-foreground">{service.title}</span>
+      </nav>
       <h1 className="sr-only">{service.title}</h1>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-12 lg:items-start">
         {/* Kolom kiri: galeri + tabs. Semua konten yang discroll berada di sini,

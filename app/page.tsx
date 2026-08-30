@@ -254,8 +254,7 @@ export default async function HomePage() {
 
       {/* ===== STATISTIK ===== */}
       <section className="relative overflow-hidden border-y border-border bg-background">
-        <div className="absolute inset-0 bg-grid" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.06] blur-[80px]" />
         <div className="relative mx-auto grid max-w-7xl grid-cols-2 gap-10 px-4 py-16 md:grid-cols-4 md:py-20">
           {stats.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08}>
@@ -278,8 +277,8 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-20">
         <Reveal>
           <div className="relative overflow-hidden rounded-2xl bg-primary p-10 text-primary-foreground md:p-16">
-            <div className="absolute inset-0 bg-noise opacity-40" />
-            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-foreground/20 blur-3xl" />
+            <div className="absolute inset-0 bg-noise opacity-20" />
+            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-foreground/15 blur-3xl" />
             <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
               <div className="max-w-lg">
                 <p className="text-xs font-bold uppercase tracking-widest opacity-70">
