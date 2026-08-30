@@ -41,3 +41,4 @@ Thumbs.db
 image.png
 postgress/
 tsconfig.tsbuildinfo
+.vercel
