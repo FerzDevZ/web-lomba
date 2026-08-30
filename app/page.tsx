@@ -57,16 +57,17 @@ export default async function HomePage() {
         _avg: { ratingAvg: true },
       })
       .then((r) => r._avg.ratingAvg ?? 0),
-    // Kolom `city` sudah dinormalkan saat penulisan (lihat lib/location.ts),
-    // jadi hitungannya cukup distinct — tidak perlu mem-parse alamat lagi
-    // di setiap request.
-    prisma.user
-      .findMany({
-        where: { role: "PROVIDER", city: { not: null } },
-        select: { city: true },
-        distinct: ["city"],
-      })
-      .then((rows) => rows.length),
+    // distinct city: aggregateRaw $group+$count → 1 doc tuntas di DB
+    // vs findMany distinct yang transfer N baris. Index [role,city] tetap kepakai.
+    (prisma.user.aggregateRaw({
+      pipeline: [
+        { $match: { role: "PROVIDER", city: { $ne: null } } },
+        { $group: { _id: "$city" } },
+        { $count: "count" },
+      ],
+    }) as unknown as Promise<Array<{ count: number }>>).then(
+      (res) => (Array.isArray(res) ? res[0]?.count ?? 0 : (res as unknown as { count?: number })?.count ?? 0)
+    ),
     // Penyedia untuk bukti sosial di hero — nama + foto asli dari DB, bukan
     // avatar stok. Hanya yang punya jasa aktif agar tidak memajang akun kosong.
     prisma.user.findMany({
