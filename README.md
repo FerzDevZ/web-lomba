@@ -479,7 +479,7 @@ Gunakan `NEXT_PUBLIC_SITE_URL`, bukan `VERCEL_URL`. Nilai `VERCEL_URL` berubah s
 
 **Pembayaran masih simulasi.** Pilihan metode pembayaran tersimpan di pesanan, tapi tidak ada integrasi payment gateway.
 
-**Notifikasi memakai polling.** Notification bell dan thread pesan melakukan polling setiap 8 detik, belum WebSocket.
+**Notifikasi memakai polling.** Notification bell melakukan polling 60s dan thread pesan polling 15s (polling 15s (messages) / 60s (notifications)), belum WebSocket.
 
 **Filter kota memakai `contains`, bukan kecocokan tepat.** Artinya `"jakarta"` juga mencocokkan `"jakarta selatan"`. Ini disengaja agar pencarian sebagian tetap berguna, tapi bukan pencocokan wilayah administratif yang presisi.
 

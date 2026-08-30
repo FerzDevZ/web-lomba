@@ -37,7 +37,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: "Apakah saya perlu membuat akun untuk memesan?",
-        a: "Ya, Anda perlu mendaftar sebagai Customer untuk memesan jasa. Pendaftaran gratis dan hanya butuh email serta password. Login bisa dengan akun Google atau email.",
+        a: "Ya, Anda perlu mendaftar sebagai Customer untuk memesan jasa. Pendaftaran gratis dan hanya butuh email serta password. Login dengan email dan password terdaftar.",
       },
       {
         q: "Bisakah saya membatalkan pesanan?",

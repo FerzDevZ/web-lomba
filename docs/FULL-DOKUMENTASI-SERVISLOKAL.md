@@ -103,7 +103,7 @@ Marketplace jasa lokal: pelanggan pesan, provider kerjakan, admin moderasi. 3 ro
 - Checkout `checkout/page.tsx`: alamat wajib `min 5 char` (nasional placeholder `Pangkal Pinang, Kepulauan Bangka Belitung` + chip), deadline `refine` masa depan + chips `Besok/2 hari/Minggu`, metode `RadioCardGroup` (transfer/ewallet/cod) + `PAYMENT_DETAILS`, ringkasan `GRATIS` biaya layanan, trust `Bisa batal gratis` + konfeti `canvas-confetti`.
 - Dashboard `dashboard/customer/page.tsx`: KPI 4 (Total, Berjalan, Selesai, Belanja `!==CANCELLED`), riwayat filter `all/active/completed`, `SavedServices` wishlist toggle atomik.
 - Ulasan `components/orders/review-form.tsx`: radiogroup 5 bintang `role=radio` + `ArrowLeft/Right`, hanya `COMPLETED` dalam `REVIEW_WINDOW_DAYS 60`, recompute `computeRatingAggregate` transaksi.
-- Pesan `MessageThread` (`max-h-[50vh]` desktop, polling 8s `refetchIntervalInBackground:false`).
+- Pesan `MessageThread` (`max-h-[50vh]` desktop, polling 15s (messages) / 60s (notifications) `refetchIntervalInBackground:false`).
 
 **Untuk Penyedia (Provider):**
 - Kanban `dashboard/provider/page.tsx` + `order-kanban.tsx`: 3 kolom `PENDING (warning) → IN_PROGRESS (info) → COMPLETED (success)` dot `bg-warning/info/success`, grip `GripVertical` drag `PointerSensor distance 6` + `TouchSensor delay 250`, tombol kontekstual `Terima & Kerjakan` / `Tandai Selesai`, validasi `canTransition` + toast `Tidak diizinkan: "Menunggu → Selesai"`, invalid drop `border-destructive/40`, `vibrate 10` + confetti, undo hanya jika `canTransition(next, prev)`.

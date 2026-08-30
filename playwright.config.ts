@@ -31,6 +31,8 @@ export default defineConfig({
 
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-320", use: { ...devices["Pixel 5"] } },
+    { name: "iphone-se", use: { ...devices["iPhone SE"] } },
   ],
 
   webServer: {
