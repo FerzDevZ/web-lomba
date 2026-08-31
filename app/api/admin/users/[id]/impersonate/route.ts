@@ -26,10 +26,16 @@ export async function POST(
   }
 
   const adminId = toPrismaId(session.user.id) as unknown as number & string
-  const admin = await prisma.user.findUnique({
-    where: { id: adminId } as unknown as { id: string | number } & { id: string },
-    select: { role: true },
-  })
+  let admin
+  try {
+    admin = await prisma.user.findUnique({
+      where: { id: adminId } as unknown as { id: string | number } & { id: string },
+      select: { role: true },
+    })
+  } catch (error) {
+    console.error("[impersonate] DB admin lookup error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
   if (admin?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
@@ -54,7 +60,13 @@ export async function POST(
     )
   }
 
-  const target = await prisma.user.findUnique({ where: { id: targetId } as unknown as { id: string | number } & { id: string } })
+  let target
+  try {
+    target = await prisma.user.findUnique({ where: { id: targetId } as unknown as { id: string | number } & { id: string } })
+  } catch (error) {
+    console.error("[impersonate] DB target lookup error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
   if (!target) {
     return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 })
   }
@@ -75,18 +87,24 @@ export async function POST(
 
   const cookieName = sessionCookieName(request.url)
 
-  const token = await encode({
-    secret,
-    salt: cookieName,
-    token: {
-      sub: String(target.id),
-      id: String(target.id),
-      role: target.role,
-      name: target.name,
-      email: target.email,
-      impersonatorId: String(adminId),
-    },
-  })
+  let token: string
+  try {
+    token = await encode({
+      secret,
+      salt: cookieName,
+      token: {
+        sub: String(target.id),
+        id: String(target.id),
+        role: target.role,
+        name: target.name,
+        email: target.email,
+        impersonatorId: String(adminId),
+      },
+    })
+  } catch (error) {
+    console.error("[impersonate] encode error:", error)
+    return NextResponse.json({ error: "Gagal membuat sesi impersonate" }, { status: 500 })
+  }
 
   const res = NextResponse.json({
     ok: true,

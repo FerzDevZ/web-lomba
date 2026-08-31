@@ -33,7 +33,13 @@ export async function POST(request: Request) {
   )
   if (limited) return limited
 
-  const original = await prisma.user.findUnique({ where: { id: originalId } })
+  let original
+  try {
+    original = await prisma.user.findUnique({ where: { id: originalId } })
+  } catch (error) {
+    console.error("[unimpersonate] DB error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
   if (!original) {
     return NextResponse.json({ error: "Akun admin asli tidak ditemukan" }, { status: 404 })
   }
@@ -48,17 +54,23 @@ export async function POST(request: Request) {
 
   const cookieName = sessionCookieName(request.url)
 
-  const token = await encode({
-    secret,
-    salt: cookieName,
-    token: {
-      sub: String(original.id),
-      id: String(original.id),
-      role: original.role,
-      name: original.name,
-      email: original.email,
-    },
-  })
+  let token: string
+  try {
+    token = await encode({
+      secret,
+      salt: cookieName,
+      token: {
+        sub: String(original.id),
+        id: String(original.id),
+        role: original.role,
+        name: original.name,
+        email: original.email,
+      },
+    })
+  } catch (error) {
+    console.error("[unimpersonate] encode error:", error)
+    return NextResponse.json({ error: "Gagal memulihkan sesi admin" }, { status: 500 })
+  }
 
   const res = NextResponse.json({ ok: true })
   console.warn({

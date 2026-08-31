@@ -28,23 +28,28 @@ export async function GET(request: Request) {
   )
   if (limited) return limited
 
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      location: true,
-      phone: true,
-      avatarUrl: true,
-      createdAt: true,
-      _count: {
-        select: { services: true, ordersOrderCustomer: true },
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        location: true,
+        phone: true,
+        avatarUrl: true,
+        createdAt: true,
+        _count: {
+          select: { services: true, ordersOrderCustomer: true },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  })
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    })
 
-  return NextResponse.json(users)
+    return NextResponse.json(users)
+  } catch (error) {
+    console.error("[admin/users] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

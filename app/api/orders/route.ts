@@ -112,23 +112,28 @@ export async function GET(request: Request) {
   )
   if (limited) return limited
 
-  const customerId = toPrismaId(session.user.id) as unknown as number & string
-  const orders = await prisma.order.findMany({
-    // @ts-ignore
-    where: { customerId },
-    include: {
-      service: {
-        include: {
-          provider: {
-            select: { id: true, name: true, avatarUrl: true },
+  try {
+    const customerId = toPrismaId(session.user.id) as unknown as number & string
+    const orders = await prisma.order.findMany({
+      // @ts-ignore
+      where: { customerId },
+      include: {
+        service: {
+          include: {
+            provider: {
+              select: { id: true, name: true, avatarUrl: true },
+            },
+            category: true,
           },
-          category: true,
         },
+        reviews: { select: { id: true, rating: true } },
       },
-      reviews: { select: { id: true, rating: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  })
+      orderBy: { createdAt: "desc" },
+    })
 
-  return NextResponse.json(orders)
+    return NextResponse.json(orders)
+  } catch (error) {
+    console.error("[orders] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

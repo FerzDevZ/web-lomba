@@ -19,90 +19,95 @@ export async function GET(request: Request) {
   const limited = enforceRateLimit(request, 'services-list', RATE_LIMITS.read)
   if (limited) return limited
 
-  const { searchParams } = new URL(request.url)
-  const search = (searchParams.get('search') ?? '').trim()
-  const slug = searchParams.get('slug')
-  const category = searchParams.get('category')
-  const minPrice = searchParams.get('minPrice')
-  const maxPrice = searchParams.get('maxPrice')
-  const rating = searchParams.get('rating')
-  const location = (searchParams.get('location') ?? '').trim()
-  const sort = (searchParams.get('sort') ?? 'newest') as keyof typeof SORT_MAP
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
-  const limit = 12
+  try {
+    const { searchParams } = new URL(request.url)
+    const search = (searchParams.get('search') ?? '').trim()
+    const slug = searchParams.get('slug')
+    const category = searchParams.get('category')
+    const minPrice = searchParams.get('minPrice')
+    const maxPrice = searchParams.get('maxPrice')
+    const rating = searchParams.get('rating')
+    const location = (searchParams.get('location') ?? '').trim()
+    const sort = (searchParams.get('sort') ?? 'newest') as keyof typeof SORT_MAP
+    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
+    const limit = 12
 
-  const where: any = { status: 'ACTIVE' }
+    const where: any = { status: 'ACTIVE' }
 
-  if (slug) {
-    where.slug = slug
-  }
-  if (category) {
-    const cid = String(category).trim()
-    if (/^[0-9a-fA-F]{24}$/.test(cid) || /^\d+$/.test(cid)) {
-      where.categoryId = toPrismaId(cid) as unknown as number & string
+    if (slug) {
+      where.slug = slug
     }
-  }
-  // Pencarian multi-kata: escape regex, limit, anti-ReDoS
-  if (search) {
-    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    const raw = search.slice(0, 50)
-    const tokens = raw.split(/\s+/).filter(Boolean).slice(0, 5).map((t) => escapeRegex(t.slice(0, 30))).filter(Boolean)
-    if (tokens.length > 0) {
-      where.AND = tokens.map((token) => ({
-        OR: [
-          { title: { contains: token } },
-          { description: { contains: token } },
-          { provider: { name: { contains: token } } },
-        ],
-      }))
+    if (category) {
+      const cid = String(category).trim()
+      if (/^[0-9a-fA-F]{24}$/.test(cid) || /^\d+$/.test(cid)) {
+        where.categoryId = toPrismaId(cid) as unknown as number & string
+      }
     }
-  }
-  if (minPrice || maxPrice) {
-    const min = minPrice ? parseFloat(minPrice) : undefined
-    const max = maxPrice ? parseFloat(maxPrice) : undefined
-    if (min !== undefined && max !== undefined && min > max) {
-      return NextResponse.json({ error: "Harga minimum tidak boleh lebih besar dari maksimum" }, { status: 400 })
+    // Pencarian multi-kata: escape regex, limit, anti-ReDoS
+    if (search) {
+      const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      const raw = search.slice(0, 50)
+      const tokens = raw.split(/\s+/).filter(Boolean).slice(0, 5).map((t) => escapeRegex(t.slice(0, 30))).filter(Boolean)
+      if (tokens.length > 0) {
+        where.AND = tokens.map((token) => ({
+          OR: [
+            { title: { contains: token } },
+            { description: { contains: token } },
+            { provider: { name: { contains: token } } },
+          ],
+        }))
+      }
     }
-    if (min !== undefined && (!Number.isFinite(min) || min < 0)) {
-      return NextResponse.json({ error: "Harga minimum tidak valid" }, { status: 400 })
+    if (minPrice || maxPrice) {
+      const min = minPrice ? parseFloat(minPrice) : undefined
+      const max = maxPrice ? parseFloat(maxPrice) : undefined
+      if (min !== undefined && max !== undefined && min > max) {
+        return NextResponse.json({ error: "Harga minimum tidak boleh lebih besar dari maksimum" }, { status: 400 })
+      }
+      if (min !== undefined && (!Number.isFinite(min) || min < 0)) {
+        return NextResponse.json({ error: "Harga minimum tidak valid" }, { status: 400 })
+      }
+      if (max !== undefined && (!Number.isFinite(max) || max < 0)) {
+        return NextResponse.json({ error: "Harga maksimum tidak valid" }, { status: 400 })
+      }
+      where.price = {}
+      if (min !== undefined) where.price.gte = min
+      if (max !== undefined) where.price.lte = max
     }
-    if (max !== undefined && (!Number.isFinite(max) || max < 0)) {
-      return NextResponse.json({ error: "Harga maksimum tidak valid" }, { status: 400 })
+    if (rating) {
+      where.ratingAvg = { gte: parseFloat(rating) }
     }
-    where.price = {}
-    if (min !== undefined) where.price.gte = min
-    if (max !== undefined) where.price.lte = max
-  }
-  if (rating) {
-    where.ratingAvg = { gte: parseFloat(rating) }
-  }
-  if (location) {
-    // Cocokkan ke `provider.city` lowercase + trim (P1-7)
-    const loc = location.trim().toLowerCase()
-    if (loc) where.provider = { city: { contains: loc } }
-  }
+    if (location) {
+      // Cocokkan ke `provider.city` lowercase + trim (P1-7)
+      const loc = location.trim().toLowerCase()
+      if (loc) where.provider = { city: { contains: loc } }
+    }
 
-  const [services, total] = await Promise.all([
-    prisma.service.findMany({
-      where,
-      include: {
-        provider: { select: { id: true, name: true, avatarUrl: true, city: true } },
-        category: { select: { id: true, name: true, slug: true, icon: true } },
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: SORT_MAP[sort] ?? SORT_MAP.newest,
-    }),
-    prisma.service.count({ where }),
-  ])
+    const [services, total] = await Promise.all([
+      prisma.service.findMany({
+        where,
+        include: {
+          provider: { select: { id: true, name: true, avatarUrl: true, city: true } },
+          category: { select: { id: true, name: true, slug: true, icon: true } },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: SORT_MAP[sort] ?? SORT_MAP.newest,
+      }),
+      prisma.service.count({ where }),
+    ])
 
-  return NextResponse.json({
-    services,
-    total,
-    page,
-    pageSize: limit,
-    totalPages: Math.ceil(total / limit),
-  })
+    return NextResponse.json({
+      services,
+      total,
+      page,
+      pageSize: limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  } catch (error) {
+    console.error("[services] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }
 
 const createServiceSchema = z.object({

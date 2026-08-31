@@ -28,37 +28,42 @@ export async function GET(request: Request) {
   )
   if (limited) return limited
 
-  const userId = toPrismaId(session.user.id) as unknown as number & string
-  const { searchParams } = new URL(request.url)
-  const singleId = searchParams.get("id")
+  try {
+    const userId = toPrismaId(session.user.id) as unknown as number & string
+    const { searchParams } = new URL(request.url)
+    const singleId = searchParams.get("id")
 
-  if (singleId) {
-    const serviceId = toPrismaId(singleId) as unknown as number & string
-    if (!String(serviceId).trim()) {
-      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    if (singleId) {
+      const serviceId = toPrismaId(singleId) as unknown as number & string
+      if (!String(serviceId).trim()) {
+        return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+      }
+      const exists = await prisma.savedService.findUnique({
+        where: { userId_serviceId: { userId, serviceId } },
+        select: { id: true },
+      })
+      return NextResponse.json({ saved: Boolean(exists) })
     }
-    const exists = await prisma.savedService.findUnique({
-      where: { userId_serviceId: { userId, serviceId } },
-      select: { id: true },
-    })
-    return NextResponse.json({ saved: Boolean(exists) })
-  }
 
-  const saved = await prisma.savedService.findMany({
-    where: { userId },
-    include: {
-      service: {
-        include: {
-          provider: { select: { id: true, name: true, avatarUrl: true } },
-          category: { select: { id: true, name: true, slug: true, icon: true } },
+    const saved = await prisma.savedService.findMany({
+      where: { userId },
+      include: {
+        service: {
+          include: {
+            provider: { select: { id: true, name: true, avatarUrl: true } },
+            category: { select: { id: true, name: true, slug: true, icon: true } },
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  })
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    })
 
-  return NextResponse.json(saved.map((s) => s.service))
+    return NextResponse.json(saved.map((s) => s.service))
+  } catch (error) {
+    console.error("[saved] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }
 
 // Simpan (POST) / hapus (DELETE) dari wishlist

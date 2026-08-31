@@ -17,24 +17,29 @@ export async function GET(
   )
   if (limited) return limited
 
-  const { id } = await params
-  if (!id || String(id).trim() === "") {
-    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
-  }
-  const serviceId = toPrismaId(String(id).trim()) as unknown as number & string
-  if (!String(serviceId).trim() || !/^[0-9a-f]{24}$|^\d+$/.test(String(serviceId))) {
-    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
-  }
+  try {
+    const { id } = await params
+    if (!id || String(id).trim() === "") {
+      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    }
+    const serviceId = toPrismaId(String(id).trim()) as unknown as number & string
+    if (!String(serviceId).trim() || !/^[0-9a-f]{24}$|^\d+$/.test(String(serviceId))) {
+      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    }
 
-  const reviews = await prisma.review.findMany({
-    where: { order: { serviceId } },
-    include: {
-      reviewer: { select: { id: true, name: true, avatarUrl: true } },
-      order: { select: { createdAt: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  })
+    const reviews = await prisma.review.findMany({
+      where: { order: { serviceId } },
+      include: {
+        reviewer: { select: { id: true, name: true, avatarUrl: true } },
+        order: { select: { createdAt: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    })
 
-  return NextResponse.json(reviews)
+    return NextResponse.json(reviews)
+  } catch (error) {
+    console.error("[services/[id]/reviews] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

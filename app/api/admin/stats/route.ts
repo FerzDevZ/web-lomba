@@ -33,6 +33,7 @@ export async function GET(request: Request) {
 
   const since = new Date(Date.now() - 13 * DAY_MS)
 
+  try {
   const [
     totalUsers,
     totalProviders,
@@ -192,4 +193,8 @@ export async function GET(request: Request) {
       .slice(0, 5),
     statusBreakdown,
   })
+  } catch (error) {
+    console.error("[admin/stats] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

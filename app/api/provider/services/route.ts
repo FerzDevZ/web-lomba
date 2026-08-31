@@ -21,14 +21,19 @@ export async function GET(request: Request) {
   if (limited) return limited
 
   const providerId = toPrismaId(session.user.id) as unknown as number & string
-  const services = await prisma.service.findMany({
-    where: { providerId },
-    include: {
-      category: { select: { id: true, name: true, slug: true } },
-      _count: { select: { orders: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  })
+  try {
+    const services = await prisma.service.findMany({
+      where: { providerId },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        _count: { select: { orders: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    })
 
-  return NextResponse.json(services)
+    return NextResponse.json(services)
+  } catch (error) {
+    console.error("[provider/services] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

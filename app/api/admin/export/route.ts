@@ -42,58 +42,63 @@ export async function GET(request: Request) {
   )
   if (limited) return limited
 
-  const orders = await prisma.order.findMany({
-    include: {
-      customer: { select: { name: true, email: true } },
-      service: {
-        include: {
-          provider: { select: { name: true } },
-          category: { select: { name: true } },
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        customer: { select: { name: true, email: true } },
+        service: {
+          include: {
+            provider: { select: { name: true } },
+            category: { select: { name: true } },
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  })
+      orderBy: { createdAt: "desc" },
+    })
 
-  const header = [
-    "ID",
-    "Jasa",
-    "Kategori",
-    "Customer",
-    "Email Customer",
-    "Provider",
-    "Status",
-    "Total",
-    "Metode Bayar",
-    "Dibuat",
-    "Selesai",
-  ]
+    const header = [
+      "ID",
+      "Jasa",
+      "Kategori",
+      "Customer",
+      "Email Customer",
+      "Provider",
+      "Status",
+      "Total",
+      "Metode Bayar",
+      "Dibuat",
+      "Selesai",
+    ]
 
-  const rows = orders.map((o) => [
-    o.id,
-    o.service.title,
-    o.service.category.name,
-    o.customer.name ?? "-",
-    o.customer.email,
-    o.service.provider.name ?? "-",
-    o.status,
-    o.totalPrice,
-    o.paymentMethod ?? "-",
-    o.createdAt.toISOString(),
-    o.completedAt ? o.completedAt.toISOString() : "-",
-  ])
+    const rows = orders.map((o) => [
+      o.id,
+      o.service.title,
+      o.service.category.name,
+      o.customer.name ?? "-",
+      o.customer.email,
+      o.service.provider.name ?? "-",
+      o.status,
+      o.totalPrice,
+      o.paymentMethod ?? "-",
+      o.createdAt.toISOString(),
+      o.completedAt ? o.completedAt.toISOString() : "-",
+    ])
 
-  const csv = [header, ...rows]
-    .map((row) => row.map(escapeCsv).join(","))
-    .join("\n")
+    const csv = [header, ...rows]
+      .map((row) => row.map(escapeCsv).join(","))
+      .join("\n")
 
-  const filename = `orders-${new Date().toISOString().slice(0, 10)}.csv`
+    const filename = `orders-${new Date().toISOString().slice(0, 10)}.csv`
 
-  return new NextResponse(`\uFEFF${csv}`, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  })
+    return new NextResponse(`\uFEFF${csv}`, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    })
+  } catch (error) {
+    console.error("[admin/export] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

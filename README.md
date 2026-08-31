@@ -65,19 +65,19 @@ Katalog  →  Checkout  →  Provider terima  →  Dikerjakan  →  Selesai  →
 
 | Lapisan | Pilihan |
 |---|---|
-| Framework | Next.js 15.1 (App Router, Server Components) |
+| Framework | Next.js 15.5.24 (App Router, Server Components) |
 | UI | React 19, Tailwind CSS 3.4, Radix UI primitives |
 | Bahasa | TypeScript (strict) |
-| Database | Prisma 5.20 + SQLite (dev), PostgreSQL (produksi) |
-| Auth | NextAuth v5 beta — Credentials provider, sesi JWT |
-| State server | TanStack Query v5 |
+| Database | Prisma 5.22 + MongoDB Atlas (prod, ap-southeast-1) + SQLite fallback dev |
+| Auth | NextAuth v5 beta — Credentials provider, sesi JWT 30d |
+| State server | TanStack Query v5 (keepPreviousData) |
 | Form | react-hook-form + Zod |
-| Animasi | GSAP + ScrollTrigger |
-| 3D | React Three Fiber (hero, lazy-loaded) |
+| Animasi | GSAP 3.15 + ScrollTrigger |
+| 3D | React Three Fiber 9.7 + Three 0.185 (hero, lazy-loaded) |
 | Grafik | Recharts (dynamic import) |
 | Notifikasi | Sonner |
-| Unit test | Vitest |
-| E2E test | Playwright |
+| Unit test | Vitest (149 tests) |
+| E2E test | Playwright (3 projects: chromium, Pixel5, iPhone SE) |
 
 ---
 
@@ -94,7 +94,8 @@ npm install
 Buat berkas `.env` di root (lihat [Variabel Lingkungan](#variabel-lingkungan)):
 
 ```bash
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:./dev.db" # dev: SQLite
+# prod: DATABASE_URL="mongodb+srv://USER:PASS@ferz.bj80suv.mongodb.net/servislokal?appName=ferz"
 AUTH_SECRET="ganti-dengan-hasil-openssl-rand-base64-32"
 AUTH_TRUST_HOST=true
 NEXTAUTH_URL="http://localhost:3000"
@@ -200,15 +201,16 @@ lib/
 └── site-url.ts                  Resolusi URL kanonik
 
 prisma/
-├── schema.prisma                Model data
-├── migrations/                  Riwayat migrasi
+├── schema.prisma                Model data (MongoDB @id @default(auto()) @map("_id") @db.ObjectId)
+├── schema.mongo.prisma          Schema Mongo khusus prod (auto-switch via vercel-prepare.js)
+├── migrations/                  Riwayat migrasi (SQLite dev)
 ├── postgresql/                  Panduan & script migrasi ke PostgreSQL
-├── seed.js                      Data contoh
+├── seed.js                      Data contoh (46 jasa, 23 provider, 6 kategori, 38 provinsi)
 └── backfill-city.js             Backfill kolom city
 
-tests/                           Unit test Vitest (7 berkas, 108 test)
-e2e/                             Playwright (2 berkas, 16 test)
-docs/                            PLANNING.md, PLANNING-UIUX.md
+tests/                           Unit test Vitest (9 berkas, 149 test)
+e2e/                             Playwright (10 berkas, 3 projects)
+docs/                            Dokumentasi lengkap + PPT Swiss Orange 26 slides
 ```
 
 ---
@@ -385,7 +387,7 @@ Prinsip lengkapnya ada di `docs/PLANNING.md` dan `docs/PLANNING-UIUX.md`. Ringka
 npm test
 ```
 
-7 berkas, 108 test. Fokus pada logika murni:
+9 berkas, 149 test. Fokus pada logika murni:
 
 | Berkas | Cakupan |
 |---|---|
@@ -396,6 +398,8 @@ npm test
 | `rating.test.ts` | Agregasi rating. |
 | `csv-escape.test.ts` | Escaping ekspor CSV. |
 | `utils.test.ts` | Format mata uang dan helper. |
+| `csrf.test.ts` | Double-submit CSRF helper. |
+| `ids.test.ts` | Dual ID ObjectId/number (Mongo/SQLite). |
 
 ### E2E — Playwright
 
@@ -426,17 +430,17 @@ E2E menambah data nyata (pesanan dan ulasan) setiap kali dijalankan. Jalankan `n
 
 ## Deployment
 
-### Vercel + PostgreSQL
+### Vercel + MongoDB Atlas (prod) + SQLite (dev fallback)
 
-1. Siapkan PostgreSQL (Neon, Supabase, atau Vercel Postgres).
-2. Ubah `datasource` di `prisma/schema.prisma` dari `sqlite` ke `postgresql`.
-3. Setel environment variables di Vercel:
-   - `DATABASE_URL` — connection string PostgreSQL
-   - `AUTH_SECRET` — hasil `openssl rand -base64 32`
+1. Siapkan MongoDB Atlas (cluster `ferz` ap-southeast-1 Singapore — `ferz.bj80suv.mongodb.net`).
+2. `prisma/schema.prisma` sudah `provider = "mongodb"` dengan `@id @default(auto()) @map("_id") @db.ObjectId`. Untuk dev lokal SQLite, `scripts/vercel-prepare.js` auto-detect `DATABASE_URL` dan switch schema bila perlu + `prisma/schema.mongo.prisma` sebagai sumber.
+3. Setel environment variables di Vercel (prod + preview, sensitive):
+   - `DATABASE_URL` — `mongodb+srv://USER:PASS@ferz.bj80suv.mongodb.net/servislokal?appName=ferz`
+   - `AUTH_SECRET` / `NEXTAUTH_SECRET` — hasil `openssl rand -base64 32` (fallback `AUTH_SECRET ?? NEXTAUTH_SECRET`)
    - `AUTH_TRUST_HOST` — `true`
-   - `NEXT_PUBLIC_SITE_URL` — domain produksi, misalnya `https://servislokal.id`
-4. Jalankan migrasi: `npx prisma migrate deploy`.
-5. Backfill kolom kota bila memigrasikan data lama: `npm run db:backfill-city`.
+   - `NEXT_PUBLIC_SITE_URL` — `https://weblomba-rouge.vercel.app` (jangan pakai `VERCEL_URL`)
+4. Build Vercel: `node scripts/vercel-prepare.js && prisma generate && next build` (sudah di `vercel.json` + `vercel-build` script).
+5. Backfill kolom kota bila memigrasikan data lama: `npm run db:backfill-city`. Untuk Mongo, pastikan Network Access `0.0.0.0/0` agar Vercel sin1 bisa konek.
 
 Gunakan `NEXT_PUBLIC_SITE_URL`, bukan `VERCEL_URL`. Nilai `VERCEL_URL` berubah setiap deployment preview, sehingga URL kanonik dan tag Open Graph ikut berubah-ubah.
 

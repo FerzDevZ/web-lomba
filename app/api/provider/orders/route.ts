@@ -22,20 +22,25 @@ export async function GET(request: Request) {
 
   const providerId = toPrismaId(session.user.id) as unknown as number & string
 
-  const orders = await prisma.order.findMany({
-    where: {
-      service: { providerId },
-    },
-    include: {
-      service: {
-        include: {
-          category: { select: { name: true } },
-          provider: { select: { name: true } },
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        service: { providerId },
+      },
+      include: {
+        service: {
+          include: {
+            category: { select: { name: true } },
+            provider: { select: { name: true } },
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  })
+      orderBy: { createdAt: "desc" },
+    })
 
-  return NextResponse.json(orders)
+    return NextResponse.json(orders)
+  } catch (error) {
+    console.error("[provider/orders] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  }
 }

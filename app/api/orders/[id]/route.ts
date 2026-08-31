@@ -36,43 +36,48 @@ export async function GET(
   )
   if (limited) return limited
 
-  const { id } = await params
-  if (!id || String(id).trim() === "") {
-    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
-  }
-  const orderId = toPrismaId(String(id).trim()) as unknown as number & string
-  if (!/^[0-9a-f]{24}$|^\d+$/.test(String(orderId))) {
-    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
-  }
+  try {
+    const { id } = await params
+    if (!id || String(id).trim() === "") {
+      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    }
+    const orderId = toPrismaId(String(id).trim()) as unknown as number & string
+    if (!/^[0-9a-f]{24}$|^\d+$/.test(String(orderId))) {
+      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    }
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId } as unknown as { id: string | number } & { id: string },
-    include: {
-      customer: { select: { id: true, name: true, avatarUrl: true } },
-      service: {
-        include: {
-          provider: { select: { id: true, name: true, avatarUrl: true } },
-          category: { select: { name: true } },
+    const order = await prisma.order.findUnique({
+      where: { id: orderId } as unknown as { id: string | number } & { id: string },
+      include: {
+        customer: { select: { id: true, name: true, avatarUrl: true } },
+        service: {
+          include: {
+            provider: { select: { id: true, name: true, avatarUrl: true } },
+            category: { select: { name: true } },
+          },
+        },
+        reviews: {
+          include: { reviewer: { select: { id: true, name: true } } },
         },
       },
-      reviews: {
-        include: { reviewer: { select: { id: true, name: true } } },
-      },
-    },
-  })
+    })
 
-  if (!order) {
-    return NextResponse.json({ error: "Pesanan tidak ditemukan" }, { status: 404 })
+    if (!order) {
+      return NextResponse.json({ error: "Pesanan tidak ditemukan" }, { status: 404 })
+    }
+
+    const userId = toPrismaId(session.user.id) as unknown as number & string
+    const isCustomer = sameId(order.customerId, userId)
+    const isProvider = sameId(order.service.providerId, userId)
+    if (!isCustomer && !isProvider) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    return NextResponse.json(order)
+  } catch (error) {
+    console.error("[orders/[id]] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
   }
-
-  const userId = toPrismaId(session.user.id) as unknown as number & string
-  const isCustomer = sameId(order.customerId, userId)
-  const isProvider = sameId(order.service.providerId, userId)
-  if (!isCustomer && !isProvider) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-  }
-
-  return NextResponse.json(order)
 }
 
 export async function PATCH(

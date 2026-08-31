@@ -46,26 +46,31 @@ export async function GET(
   )
   if (limited) return limited
 
-  const { id } = await params
-  const orderId = toPrismaId(id) as unknown as number & string
-  if (!String(orderId).trim()) {
-    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+  try {
+    const { id } = await params
+    const orderId = toPrismaId(id) as unknown as number & string
+    if (!String(orderId).trim()) {
+      return NextResponse.json({ error: "ID tidak valid" }, { status: 400 })
+    }
+
+    const userId = toPrismaId(session.user.id) as unknown as number & string
+    const check = await getOrderParticipant(orderId, userId)
+    if (!check.order) {
+      return NextResponse.json({ error: check.error }, { status: check.status })
+    }
+
+    const messages = await prisma.message.findMany({
+      where: { orderId },
+      include: { sender: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "asc" },
+      take: 200,
+    })
+
+    return NextResponse.json(messages)
+  } catch (error) {
+    console.error("[messages] GET error:", error)
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
   }
-
-  const userId = toPrismaId(session.user.id) as unknown as number & string
-  const check = await getOrderParticipant(orderId, userId)
-  if (!check.order) {
-    return NextResponse.json({ error: check.error }, { status: check.status })
-  }
-
-  const messages = await prisma.message.findMany({
-    where: { orderId },
-    include: { sender: { select: { id: true, name: true } } },
-    orderBy: { createdAt: "asc" },
-    take: 200,
-  })
-
-  return NextResponse.json(messages)
 }
 
 export async function POST(
