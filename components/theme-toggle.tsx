@@ -11,7 +11,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:border-primary/40 hover:text-primary-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all hover:border-primary/40 hover:text-primary-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Sun
         className={`h-4 w-4 transition-all duration-300 ${

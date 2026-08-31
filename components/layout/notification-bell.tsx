@@ -71,8 +71,12 @@ export function NotificationBell() {
             aria-hidden
             className="fixed inset-0 z-40"
             onClick={() => setOpen(false)}
+            style={{ touchAction: 'none' }}
           />
-          <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-border bg-card p-2 shadow-card-lg">
+          <div
+            className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-border bg-card p-2 shadow-card-lg"
+            style={{ touchAction: 'manipulation' }}
+          >
             <div className="px-3 py-2 text-sm font-semibold">Notifikasi</div>
             {items.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-muted-foreground">

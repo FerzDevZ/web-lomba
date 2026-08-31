@@ -145,6 +145,12 @@ export function SearchBar() {
   React.useEffect(() => {
     if (!mobileOpen) return
     previousFocus.current = document.activeElement as HTMLElement | null
+    // Gunakan position: fixed + overscroll-behavior agar background tidak
+    // ter-scroll di Android Chrome (overscroll gesture).
+    const scrollY = window.scrollY
+    document.body.style.position = "fixed"
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = "100%"
     document.body.style.overflow = "hidden"
     const t = setTimeout(() => mobileInputRef.current?.focus(), 100)
     const onKey = (e: KeyboardEvent) => {
@@ -164,7 +170,11 @@ export function SearchBar() {
     window.addEventListener("keydown", onKey)
     return () => {
       clearTimeout(t)
+      document.body.style.position = ""
+      document.body.style.top = ""
+      document.body.style.width = ""
       document.body.style.overflow = ""
+      window.scrollTo(0, scrollY)
       window.removeEventListener("keydown", onKey)
       previousFocus.current?.focus()
     }
@@ -248,13 +258,13 @@ export function SearchBar() {
       {/* Overlay search mobile */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} style={{ touchAction: 'none' }} />
           <div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-label="Pencarian"
-            className="absolute inset-x-0 top-0 border-b border-border bg-background p-3 shadow-card-lg animate-in slide-in-from-top-4 duration-200"
+            className="absolute inset-x-0 top-0 border-b border-border bg-background p-3 shadow-card-lg animate-rise-in"
           >
             <form action="/services" className="flex items-center gap-2" onSubmit={() => setMobileOpen(false)}>
               <div className="group flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2.5 transition-[border-color,box-shadow] duration-200 focus-within:border-primary/50 focus-within:shadow-glow">

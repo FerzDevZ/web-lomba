@@ -13,6 +13,13 @@ export function MobileMenu({ session }: { session: boolean }) {
   React.useEffect(() => {
     if (!open) return
     previousFocus.current = document.activeElement as HTMLElement | null
+    // Gunakan position: fixed pada body + overscroll-behavior: contain
+    // karena style.overflow = "hidden" tidak cukup di Android Chrome —
+    // overscroll gesture tetap bisa menggerakkan background.
+    const scrollY = window.scrollY
+    document.body.style.position = "fixed"
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = "100%"
     document.body.style.overflow = "hidden"
     const frame = requestAnimationFrame(() => {
       panelRef.current?.querySelector<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')?.focus()
@@ -30,7 +37,11 @@ export function MobileMenu({ session }: { session: boolean }) {
     window.addEventListener("keydown", onKey)
     return () => {
       cancelAnimationFrame(frame)
+      document.body.style.position = ""
+      document.body.style.top = ""
+      document.body.style.width = ""
       document.body.style.overflow = ""
+      window.scrollTo(0, scrollY)
       window.removeEventListener("keydown", onKey)
       previousFocus.current?.focus()
     }
@@ -50,18 +61,20 @@ export function MobileMenu({ session }: { session: boolean }) {
 
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-          />
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu navigasi"
-            className="absolute right-0 top-0 h-full w-72 border-l border-border bg-background p-5 shadow-card-lg"
-          >
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+          style={{ touchAction: 'none' }}
+        />
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu navigasi"
+          className="absolute right-0 top-0 h-full w-72 border-l border-border bg-background p-5 shadow-card-lg"
+          style={{ overscrollBehavior: 'contain' }}
+        >
             <div className="mb-6 flex items-center justify-between">
               <span className="text-lg font-bold">
                 Servis<span className="text-primary-strong">Lokal</span>

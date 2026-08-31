@@ -150,6 +150,12 @@ export function DashboardShell({
   React.useEffect(() => {
     if (!drawerOpen) return
     previousFocus.current = document.activeElement as HTMLElement | null
+    // Gunakan position: fixed + overscroll-behavior agar background tidak
+    // ter-scroll di Android Chrome (overscroll gesture).
+    const scrollY = window.scrollY
+    document.body.style.position = "fixed"
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = "100%"
     document.body.style.overflow = "hidden"
     const frame = requestAnimationFrame(() => {
       panelRef.current?.querySelector<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')?.focus()
@@ -167,7 +173,11 @@ export function DashboardShell({
     window.addEventListener("keydown", onKey)
     return () => {
       cancelAnimationFrame(frame)
+      document.body.style.position = ""
+      document.body.style.top = ""
+      document.body.style.width = ""
       document.body.style.overflow = ""
+      window.scrollTo(0, scrollY)
       window.removeEventListener("keydown", onKey)
       previousFocus.current?.focus()
     }
@@ -212,6 +222,7 @@ export function DashboardShell({
               aria-hidden
               className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
               onClick={() => setDrawerOpen(false)}
+              style={{ touchAction: 'none' }}
             />
             <aside
               ref={panelRef}
