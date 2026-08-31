@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NODE_ENV=production next build",
     "start": "next start",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/vercel-prepare.js && prisma generate && next build",
+    "vercel-build": "node scripts/vercel-prepare.js && prisma generate && NODE_ENV=production next build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -51,7 +50,7 @@ export default function AdminUsersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const [busyId, setBusyId] = useState<number | null>(null)
+  const [busyId, setBusyId] = useState<string | number | null>(null)
 
   useEffect(() => {
     if (status === "loading") return

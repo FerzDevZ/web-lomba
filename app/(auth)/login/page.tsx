@@ -42,7 +42,7 @@ function getSafeCallbackUrl(raw: string | null): string {
 
 function LoginForm() {
   const searchParams = useSearchParams()
-  const rawCallbackUrl = searchParams.get("callbackUrl") ?? "/dashboard"
+  const rawCallbackUrl = searchParams?.get("callbackUrl") ?? "/dashboard"
   const callbackUrl = getSafeCallbackUrl(rawCallbackUrl)
 
   const [email, setEmail] = useState("")

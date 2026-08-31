@@ -114,9 +114,9 @@ export default function AdminDashboardPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <div className="flex flex-wrap justify-center gap-4 md:grid md:grid-cols-3 md:justify-items-stretch xl:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
+            <Skeleton key={i} className="h-32 w-[calc(50%-0.5rem)] rounded-2xl md:w-auto" />
           ))}
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="flex flex-wrap justify-center gap-4 md:grid md:grid-cols-3 md:justify-items-stretch xl:grid-cols-5">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-32 rounded-2xl" />
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
           : kpis.map((kpi) => {
               const Icon = kpi.icon
               return (
-                <Card key={kpi.label}>
+                <Card key={kpi.label} className="w-[calc(50%-0.5rem)] md:w-auto">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm text-muted-foreground">{kpi.label}</p>

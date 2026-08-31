@@ -705,7 +705,7 @@ export default function ServiceDetailClient({
       )}
 
       {/* Action bar mobile — glass */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-4">
           <div className="min-w-0">
             <div className="text-2xs uppercase tracking-wide text-muted-foreground">

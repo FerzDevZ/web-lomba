@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import Link from "next/link"
@@ -34,7 +33,7 @@ export default function ModerasiPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [busyId, setBusyId] = useState<number | null>(null)
+  const [busyId, setBusyId] = useState<string | number | null>(null)
 
   useEffect(() => {
     if (status === "loading") return
