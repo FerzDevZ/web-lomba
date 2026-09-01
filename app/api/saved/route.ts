@@ -83,7 +83,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const parsed = toggleSchema.parse(body)
-    // Pastikan ID selalu string untuk MongoDB @db.ObjectId
     const serviceId = String(parsed.serviceId)
     const userId = String(session.user.id)
 
@@ -95,20 +94,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Jasa tidak ditemukan" }, { status: 404 })
     }
 
-    // Toggle atomik dalam transaksi (P0-4)
-    const result = await prisma.$transaction(async (tx: any) => {
-      const existing = await tx.savedService.findUnique({
-        where: { userId_serviceId: { userId, serviceId } },
-      })
-      if (existing) {
-        await tx.savedService.delete({ where: { id: existing.id } })
-        return { saved: false, code: 200 as const }
-      }
-      await tx.savedService.create({ data: { userId, serviceId } })
-      return { saved: true, code: 201 as const }
+    // Toggle tanpa transaksi — MongoDB M0 (free tier) tidak support
+    // multi-document transactions. Unique constraint tetap menjaga
+    // integritas: race condition paling banter create duplikat yang
+    // langsung ditolak unique index.
+    const existing = await prisma.savedService.findUnique({
+      where: { userId_serviceId: { userId, serviceId } },
     })
-    return NextResponse.json({ saved: result.saved }, { status: result.code })
+
+    if (existing) {
+      await prisma.savedService.delete({ where: { id: existing.id } })
+      return NextResponse.json({ saved: false }, { status: 200 })
+    }
+
+    try {
+      await prisma.savedService.create({ data: { userId, serviceId } })
+      return NextResponse.json({ saved: true }, { status: 201 })
+    } catch (createErr: any) {
+      // P2002 = unique constraint violated — berarti ada race condition,
+      // delete saja record yang baru dibuat user lain.
+      if (createErr?.code === "P2002") {
+        const dupe = await prisma.savedService.findUnique({
+          where: { userId_serviceId: { userId, serviceId } },
+        })
+        if (dupe) {
+          await prisma.savedService.delete({ where: { id: dupe.id } })
+          return NextResponse.json({ saved: false }, { status: 200 })
+        }
+      }
+      throw createErr
+    }
   } catch (error) {
+    console.error("[saved] POST error:", error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0]?.message ?? "Data tidak valid" },
