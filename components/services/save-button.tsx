@@ -61,7 +61,7 @@ export function SaveButton({
       const res = await fetch("/api/saved", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serviceId }),
+        body: JSON.stringify({ serviceId: String(serviceId) }),
       })
       if (res.ok) {
         const data = await res.json()
