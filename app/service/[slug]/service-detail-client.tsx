@@ -74,6 +74,57 @@ function formatCity(city: string | null): string {
     .join(" ")
 }
 
+/** Shared: trust points list — reused in mobile sidebar + desktop sidebar. */
+function TrustPointsList({ className }: { className?: string }) {
+  return (
+    <ul className={className ?? "space-y-2"}>
+      {TRUST_POINTS.map((text) => (
+        <li key={text} className="flex items-start gap-2 text-xs text-muted-foreground">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
+          {text}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Shared: provider card link — avatar size controlled by `size` prop. */
+function ProviderCardLink({
+  service,
+  providerStats,
+  avatarSize = "h-12 w-12",
+  textSize = "text-base",
+}: {
+  service: ServiceItem
+  providerStats: ProviderStats
+  avatarSize?: string
+  textSize?: string
+}) {
+  return (
+    <Link
+      href={`/provider/${service.provider.id}`}
+      className="focus-ring group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
+    >
+      {service.provider.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={service.provider.avatarUrl} alt={service.provider.name ?? "Provider"} className={`${avatarSize} shrink-0 rounded-full object-cover ring-2 ring-primary/10`} />
+      ) : (
+        <div className={`flex ${avatarSize} items-center justify-center rounded-full bg-primary/10 ${textSize} font-extrabold text-primary-strong`}>
+          {(service.provider.name ?? "P").charAt(0).toUpperCase()}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="truncate font-bold transition-colors group-hover:text-primary-strong">{service.provider.name}</div>
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <ShieldCheck className="h-4 w-4 text-primary-strong" aria-hidden />
+          {providerStats.completedOrders} pesanan selesai
+        </div>
+      </div>
+      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-0.5 group-hover:text-primary-strong" aria-hidden />
+    </Link>
+  )
+}
+
 // Janji platform yang benar-benar dijalankan — sama dengan trust points
 // checkout agar pengalaman antarhalaman konsisten.
 const TRUST_POINTS = [
@@ -344,32 +395,10 @@ export default function ServiceDetailClient({
               per jasa • estimasi selesai dalam {service.deliveryTimeDays} hari
             </div>
           </div>
-          <ul className="space-y-2 lg:hidden">
-            {TRUST_POINTS.map((text) => (
-              <li key={text} className="flex items-start gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
-                {text}
-              </li>
-            ))}
-          </ul>
-          <Link href={`/provider/${service.provider.id}`} className="focus-ring group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 lg:hidden">
-            {service.provider.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={service.provider.avatarUrl} alt={service.provider.name ?? "Provider"} className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-primary/10" />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-extrabold text-primary-strong">
-                {(service.provider.name ?? "P").charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-bold">{service.provider.name}</div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary-strong" aria-hidden />
-                {providerStats.completedOrders} pesanan selesai
-              </div>
-            </div>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          </Link>
+          <TrustPointsList className="space-y-2 lg:hidden" />
+          <div className="lg:hidden">
+            <ProviderCardLink service={service} providerStats={providerStats} avatarSize="h-12 w-12" textSize="text-base" />
+          </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid w-full grid-cols-3 gap-1">
@@ -649,38 +678,9 @@ export default function ServiceDetailClient({
             </div>
           </div>
 
-          <ul className="space-y-2">
-            {TRUST_POINTS.map((text) => (
-              <li key={text} className="flex items-start gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
-                {text}
-              </li>
-            ))}
-          </ul>
+          <TrustPointsList />
 
-          <Link
-            href={`/provider/${service.provider.id}`}
-            className="focus-ring group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
-          >
-            {service.provider.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={service.provider.avatarUrl} alt={service.provider.name ?? "Provider"} className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-primary/10" />
-            ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-lg font-extrabold text-primary-strong">
-                {(service.provider.name ?? "P").charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="flex-1">
-              <div className="font-bold transition-colors group-hover:text-primary-strong">
-                {service.provider.name}
-              </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary-strong" aria-hidden />
-                {providerStats.completedOrders} pesanan selesai
-              </div>
-            </div>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-0.5 group-hover:text-primary-strong" aria-hidden />
-          </Link>
+          <ProviderCardLink service={service} providerStats={providerStats} avatarSize="h-14 w-14" textSize="text-lg" />
         </div>
       </div>
 

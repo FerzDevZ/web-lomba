@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextResponse } from "next/server"
 import { encode } from "next-auth/jwt"
 import { prisma } from "@/lib/prisma"
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Tidak sedang impersonate" }, { status: 400 })
   }
 
-  const originalId = toPrismaId(session.user.impersonatedBy)
+  const originalId = toPrismaId(session.user.impersonatedBy!) as string
 
   const limited = enforceRateLimit(
     request,

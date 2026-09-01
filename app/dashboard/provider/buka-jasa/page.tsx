@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -15,7 +14,7 @@ import { ProviderServiceList } from "@/components/provider/provider-service-list
 export default function BukaJasaPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
-  const [createdId, setCreatedId] = useState<number | null>(null)
+  const [createdId, setCreatedId] = useState<string | number | null>(null)
 
   if (status === "loading") {
     return <DashboardSkeleton stats={0} panels={2} />

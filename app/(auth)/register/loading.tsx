@@ -1,5 +1,5 @@
 import { AuthFormSkeleton } from "@/components/layout/auth-form-skeleton"
 
-export default function Loading() {
-  return <AuthFormSkeleton fields={3} />
+export default function RegisterLoading() {
+  return <AuthFormSkeleton fields={4} />
 }
