@@ -26,8 +26,10 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
+  Share2,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
 import { SaveButton } from "@/components/services/save-button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PageShell } from "@/components/layout/page-shell"
@@ -675,6 +677,20 @@ export default function ServiceDetailClient({
                 <Link href={checkoutHref}>Pesan Sekarang</Link>
               </Button>
               <SaveButton serviceId={service.id} size="lg" />
+              <Button
+                size="lg"
+                variant="outline"
+                aria-label="Bagikan jasa ini"
+                onClick={() => {
+                  const url = typeof window !== "undefined" ? window.location.href : ""
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url)
+                    toast.success("Tautan tersalin", { description: "Link jasa ini sudah disalin ke clipboard." })
+                  }
+                }}
+              >
+                <Share2 className="h-4 w-4" aria-hidden />
+              </Button>
             </div>
           </div>
 
@@ -717,8 +733,23 @@ export default function ServiceDetailClient({
           </div>
           <SaveButton
             serviceId={service.id}
-            className="ml-auto shrink-0"
+            className="shrink-0"
           />
+          <Button
+            size="lg"
+            variant="outline"
+            className="shrink-0"
+            aria-label="Bagikan jasa ini"
+            onClick={() => {
+              const url = typeof window !== "undefined" ? window.location.href : ""
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(url)
+                toast.success("Tautan tersalin", { description: "Link jasa ini sudah disalin ke clipboard." })
+              }
+            }}
+          >
+            <Share2 className="h-4 w-4" aria-hidden />
+          </Button>
           <Button size="lg" className="flex-1 shadow-glow" asChild>
             <Link href={checkoutHref}>Pesan Sekarang</Link>
           </Button>
