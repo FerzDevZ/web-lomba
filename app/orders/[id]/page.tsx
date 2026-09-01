@@ -298,11 +298,11 @@ function OrderDetailContent() {
               </span>
             </div>
             {order.address && (
-            <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
+            <div className="flex items-start gap-3 border-b border-border pb-3">
               <span className="flex shrink-0 items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4 shrink-0" aria-hidden /> <span className="hidden sm:inline">Alamat pelaksanaan</span><span className="sm:hidden">Alamat</span>
               </span>
-              <span className="min-w-0 text-right font-medium">
+              <span className="min-w-0 flex-1 text-left font-medium">
                 {order.address}
               </span>
             </div>

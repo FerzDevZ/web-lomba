@@ -111,7 +111,9 @@ export function SaveButton({
           isSaved && "fill-current scale-110"
         )}
       />
-      <span>{isSaved ? "Disimpan" : "Simpan"}</span>
+      {size !== "icon" && (
+        <span>{isSaved ? "Disimpan" : "Simpan"}</span>
+      )}
     </Button>
   )
 }

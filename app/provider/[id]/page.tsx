@@ -140,24 +140,24 @@ export default async function ProviderProfilePage({
         </div>
 
         {/* Statistik */}
-        <div className="grid w-full grid-cols-3 gap-4 md:w-auto">
-          <div className="rounded-2xl border border-border bg-background p-4 text-center">
-            <div className="text-2xl font-extrabold text-primary-strong">
+        <div className="grid w-full grid-cols-3 gap-2 sm:gap-4 md:w-auto">
+          <div className="rounded-2xl border border-border bg-background p-2.5 text-center sm:p-4">
+            <div className="text-xl font-extrabold text-primary-strong sm:text-2xl">
               {ratingAvg.toFixed(1)}
             </div>
-            <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+            <div className="mt-1 flex items-center justify-center gap-1 text-2xs text-muted-foreground sm:text-xs">
               <Star className="h-3 w-3 fill-rating text-rating" /> Rating
             </div>
           </div>
-          <div className="rounded-2xl border border-border bg-background p-4 text-center">
-            <div className="text-2xl font-extrabold">{totalReviews}</div>
-            <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+          <div className="rounded-2xl border border-border bg-background p-2.5 text-center sm:p-4">
+            <div className="text-xl font-extrabold sm:text-2xl">{totalReviews}</div>
+            <div className="mt-1 flex items-center justify-center gap-1 text-2xs text-muted-foreground sm:text-xs">
               <MessageSquare className="h-3 w-3" /> Ulasan
             </div>
           </div>
-          <div className="rounded-2xl border border-border bg-background p-4 text-center">
-            <div className="text-2xl font-extrabold">{services.length}</div>
-            <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+          <div className="rounded-2xl border border-border bg-background p-2.5 text-center sm:p-4">
+            <div className="text-xl font-extrabold sm:text-2xl">{services.length}</div>
+            <div className="mt-1 flex items-center justify-center gap-1 text-2xs text-muted-foreground sm:text-xs">
               <Package className="h-3 w-3" /> Jasa
             </div>
           </div>

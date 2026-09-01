@@ -240,7 +240,7 @@ function CatalogContent() {
             id="sort-button"
             aria-controls="sort-listbox"
             onClick={() => setSortOpen((v) => !v)}
-            className="focus-ring flex h-10 w-48 items-center justify-between rounded-lg border border-input bg-card px-3 text-sm"
+            className="focus-ring flex h-10 w-full items-center justify-between rounded-lg border border-input bg-card px-3 text-sm sm:w-48"
           >
             <span>{SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Terbaru"}</span>
             <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${sortOpen ? "rotate-180" : ""}`} aria-hidden />
@@ -251,7 +251,7 @@ function CatalogContent() {
               id="sort-listbox"
               aria-label="Urutkan jasa"
               aria-labelledby="sort-button"
-              className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-card-lg"
+              className="absolute right-0 top-full z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-card shadow-card-lg sm:w-48"
               onKeyDown={(e) => { if (e.key === "Tab") setSortOpen(false) }}
             >
               {SORT_OPTIONS.map((o) => (

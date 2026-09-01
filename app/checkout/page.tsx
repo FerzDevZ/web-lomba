@@ -401,10 +401,10 @@ function CheckoutContent() {
     .toISOString()
     .split("T")[0]
 
-  const submitButton = (className?: string, variant: "primary" | "secondary" = "primary") => (
+  const submitButton = (className?: string, variant: "primary" | "secondary" = "primary", size: "default" | "lg" = "lg") => (
     <Button
       type="submit"
-      size="lg"
+      size={size}
       variant={variant === "secondary" ? "outline" : "default"}
       className={className}
       disabled={submitting || isOwnService}
@@ -678,7 +678,7 @@ function CheckoutContent() {
               </div>
             </div>
             <div className="ml-auto flex-1">
-              {submitButton("flex w-full shadow-glow")}
+              {submitButton("flex w-full shadow-glow", "primary", "default")}
             </div>
           </div>
         </div>

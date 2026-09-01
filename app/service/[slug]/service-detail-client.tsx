@@ -674,25 +674,28 @@ export default function ServiceDetailClient({
             <div className="mt-1 text-sm text-muted-foreground">
               per jasa • estimasi selesai dalam {service.deliveryTimeDays} hari
             </div>
-            <div className="mt-5 flex gap-3">
+            <div className="mt-5 flex flex-col gap-3 lg:flex-row">
               <Button size="lg" className="flex-1 shadow-glow" asChild>
                 <Link href={checkoutHref}>Pesan Sekarang</Link>
               </Button>
-              <SaveButton serviceId={service.id} size="lg" />
-              <Button
-                size="lg"
-                variant="outline"
-                aria-label="Bagikan jasa ini"
-                onClick={() => {
-                  const url = typeof window !== "undefined" ? window.location.href : ""
-                  if (navigator.clipboard) {
-                    navigator.clipboard.writeText(url)
-                    toast.success("Tautan tersalin", { description: "Link jasa ini sudah disalin ke clipboard." })
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4" aria-hidden />
-              </Button>
+              <div className="flex gap-2">
+                <SaveButton serviceId={service.id} size="lg" className="flex-1 sm:flex-none" />
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 shrink-0"
+                  aria-label="Bagikan jasa ini"
+                  onClick={() => {
+                    const url = typeof window !== "undefined" ? window.location.href : ""
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(url)
+                      toast.success("Tautan tersalin", { description: "Link jasa ini sudah disalin ke clipboard." })
+                    }
+                  }}
+                >
+                  <Share2 className="h-4 w-4" aria-hidden />
+                </Button>
+              </div>
             </div>
           </div>
 

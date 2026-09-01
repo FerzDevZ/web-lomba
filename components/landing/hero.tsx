@@ -219,7 +219,7 @@ export function Hero({
                 ukuran: di mobile inilah satu-satunya bukti sosial numerik. */}
             <div
               data-hero-float
-              className="absolute -left-2 top-[12%] w-[152px] rounded-2xl border border-border bg-card/95 p-3.5 shadow-card-lg sm:-left-4 sm:top-[14%] sm:w-48 sm:p-4"
+              className="absolute -left-1 top-[10%] w-[132px] rounded-2xl border border-border bg-card/95 p-3 shadow-card-lg sm:-left-4 sm:top-[14%] sm:w-48 sm:p-4"
             >
               <div className="flex items-baseline gap-1">
                 <Star
@@ -242,7 +242,7 @@ export function Hero({
             {/* Kartu jumlah penyedia — ditempel ke tepi kanan-bawah cincin */}
             <div
               data-hero-float
-              className="absolute -right-2 bottom-[12%] w-[152px] rounded-2xl border border-border bg-card/95 p-3.5 shadow-card-lg sm:-right-4 sm:bottom-[14%] sm:w-48 sm:p-4"
+              className="absolute -right-1 bottom-[10%] w-[132px] rounded-2xl border border-border bg-card/95 p-3 shadow-card-lg sm:-right-4 sm:bottom-[14%] sm:w-48 sm:p-4"
             >
               <div className="text-2xl font-extrabold tabular-nums text-primary-strong sm:text-3xl">
                 <Counter value={providerCount} suffix="+" />
