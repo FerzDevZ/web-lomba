@@ -62,7 +62,7 @@ export default async function Navbar() {
                   </Button>
                 </Link>
               )}
-              <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 sm:flex">
                 <Avatar className="h-8 w-8 ring-2 ring-primary/40">
                   {session.user.image ? (
                     <AvatarImage src={session.user.image} alt={session.user.name ?? "User"} />

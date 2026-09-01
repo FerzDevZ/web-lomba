@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { signOut } from "next-auth/react"
 import { Menu, X, PlusCircle, LayoutDashboard, LogIn, UserPlus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -140,15 +141,14 @@ export function MobileMenu({ session }: { session: boolean }) {
 
             <div className="mt-6 space-y-2 border-t border-border pt-6">
               {session ? (
-                <form
-                  action="/api/auth/signout"
-                  method="post"
-                  className="space-y-2"
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => signOut({ callbackUrl: "/" })}
                 >
-                  <Button type="submit" variant="outline" className="w-full">
-                    Keluar
-                  </Button>
-                </form>
+                  Keluar
+                </Button>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setOpen(false)}>
