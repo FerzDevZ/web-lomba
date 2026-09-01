@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { Suspense, useEffect, useRef, useState } from "react"
@@ -153,7 +152,7 @@ function useCountUp(target: number, durationMs = 900) {
 }
 
 function CheckoutSuccess({ orderId }: { orderId: string | number }) {
-  const displayId = useCountUp(orderId)
+  const displayId = useCountUp(typeof orderId === 'number' ? orderId : Number(orderId) || 0)
 
   // Konfeti hanya sekali saat mount. Warna diambil dari palet brand.
   // Dimatikan total bila pengguna memilih reduced-motion.

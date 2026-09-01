@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Counter } from "@/components/landing/counter"
+import { StatCard } from "@/components/dashboard/stat-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { OrderStatusBadge } from "@/components/orders/order-status-badge"
 import { PageHeader } from "@/components/layout/page-shell"
@@ -127,38 +128,45 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const kpis: Kpi[] = [
+  const kpis = [
     {
       label: "Pengguna",
       value: stats?.totalUsers ?? 0,
-      sub: `${stats?.totalProviders ?? 0} provider • ${stats?.totalCustomers ?? 0} customer`,
       icon: Users,
+      tone: "info" as const,
+      href: "/dashboard/admin/users",
+      hint: `${stats?.totalProviders ?? 0} provider • ${stats?.totalCustomers ?? 0} customer`,
     },
     {
       label: "Pesanan",
       value: stats?.totalOrders ?? 0,
-      sub: `${stats?.statusBreakdown.PENDING ?? 0} menunggu`,
       icon: Package,
+      tone: "primary" as const,
+      href: "/dashboard/admin",
+      hint: `${stats?.statusBreakdown.PENDING ?? 0} menunggu`,
     },
     {
       label: "Pendapatan",
-      value: stats?.revenue ?? 0,
-      money: true,
-      sub: "dari pesanan selesai",
+      value: formatIDR(stats?.revenue ?? 0),
       icon: Wallet,
+      tone: "success" as const,
+      href: "/dashboard/admin",
     },
     {
       label: "Jasa Aktif",
       value: stats?.activeServices ?? 0,
-      sub: `dari ${stats?.totalServices ?? 0} total`,
       icon: Store,
+      tone: "warning" as const,
+      href: "/dashboard/admin/moderasi",
+      hint: `dari ${stats?.totalServices ?? 0} total`,
     },
     {
       label: "Rating Rata-rata",
       value: stats?.avgRating ?? 0,
-      decimals: 1,
-      sub: "jasa aktif",
       icon: Star,
+      tone: "muted" as const,
+      href: "/dashboard/admin",
+      hint: "jasa aktif",
     },
   ]
 
@@ -184,31 +192,18 @@ export default function AdminDashboardPage() {
           ? Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-32 rounded-2xl" />
             ))
-          : kpis.map((kpi) => {
-              const Icon = kpi.icon
-              return (
-                <Card key={kpi.label} className="w-[calc(50%-0.5rem)] md:w-auto">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-muted-foreground">{kpi.label}</p>
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
-                        <Icon className="h-4 w-4" aria-hidden />
-                      </div>
-                    </div>
-                    <div className="mt-2 text-lg font-extrabold tabular-nums tracking-tight sm:text-2xl">
-                      {kpi.money ? (
-                        <Counter value={kpi.value} prefix="Rp" suffix="" />
-                      ) : (
-                        <Counter value={kpi.value} decimals={kpi.decimals ?? 0} />
-                      )}
-                    </div>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {kpi.sub}
-                    </p>
-                  </CardContent>
-                </Card>
-              )
-            })}
+          : kpis.map((kpi) => (
+              <StatCard
+                key={kpi.label}
+                label={kpi.label}
+                value={kpi.value}
+                icon={kpi.icon}
+                tone={kpi.tone}
+                href={kpi.href}
+                hint={kpi.hint}
+                className="w-[calc(50%-0.5rem)] md:w-auto"
+              />
+            ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

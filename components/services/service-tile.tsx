@@ -79,7 +79,7 @@ export function ServiceTile({
         </Badge>
         <div className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-card/95 px-2 py-1 text-xs font-semibold shadow-sm">
           <Star className="h-3 w-3 fill-rating text-rating" aria-hidden />
-          {service.ratingAvg > 0 ? service.ratingAvg.toFixed(1) : "Baru"}
+          {service.totalReviews > 0 ? service.ratingAvg.toFixed(1) : "Baru"}
           {service.totalReviews > 0 && (
             <span className="font-normal text-muted-foreground">
               ({service.totalReviews})

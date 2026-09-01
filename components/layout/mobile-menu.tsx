@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Menu, X, PlusCircle, LayoutDashboard, LogIn, UserPlus } from "lucide-react"
+import { Menu, X, PlusCircle, LayoutDashboard, LogIn, UserPlus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function MobileMenu({ session }: { session: boolean }) {
@@ -89,6 +90,23 @@ export function MobileMenu({ session }: { session: boolean }) {
               </button>
             </div>
 
+            {/* Search bar — akses cepat tanpa harus buka /services */}
+            <form
+              action="/services"
+              className="mb-4"
+            >
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 focus-within:border-primary/50 focus-within:shadow-glow transition-[border-color,box-shadow]">
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                <input
+                  name="search"
+                  type="search"
+                  placeholder="Cari jasa..."
+                  aria-label="Cari jasa"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+            </form>
+
             <nav className="flex flex-col gap-2">
               <Link
                 href="/services"
@@ -110,6 +128,13 @@ export function MobileMenu({ session }: { session: boolean }) {
                 className="focus-ring flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-accent"
               >
                 <PlusCircle className="h-4 w-4" /> Buka Jasa
+              </Link>
+              <Link
+                href="/faq"
+                onClick={() => setOpen(false)}
+                className="focus-ring rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                Pusat Bantuan
               </Link>
             </nav>
 

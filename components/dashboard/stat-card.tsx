@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { Counter } from "@/components/landing/counter"
@@ -21,6 +22,7 @@ export function StatCard({
   icon: Icon,
   tone = "primary",
   hint,
+  href,
   className,
 }: {
   label: string
@@ -28,10 +30,11 @@ export function StatCard({
   icon: LucideIcon
   tone?: keyof typeof TONES
   hint?: string
+  href?: string
   className?: string
 }) {
-  return (
-    <Card className={cn("transition-[transform,box-shadow] duration-200 ease-smooth hover:-translate-y-0.5 hover:shadow-card", className)}>
+  const card = (
+    <Card className={cn("transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:-translate-y-0.5 hover:shadow-card", href && "cursor-pointer hover:border-primary/40", className)}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -59,9 +62,18 @@ export function StatCard({
             )}
           >
             <Icon className="h-5 w-5" aria-hidden />
-          </div>
-        </div>
-      </CardContent>
+          </div>          </div>
+        </CardContent>
     </Card>
   )
+
+  if (href) {
+    return (
+      <Link href={href} className="focus-ring block">
+        {card}
+      </Link>
+    )
+  }
+
+  return card
 }

@@ -82,24 +82,28 @@ export function CustomerDashboard() {
               value={orders?.length ?? 0}
               icon={Package}
               tone="primary"
+              href="/dashboard/customer"
             />
             <StatCard
               label="Sedang Berjalan"
               value={inProgress}
               icon={Clock}
               tone="info"
+              href="/dashboard/customer"
             />
             <StatCard
               label="Selesai"
               value={completed}
               icon={CheckCircle2}
               tone="success"
+              href="/dashboard/customer"
             />
             <StatCard
               label="Total Belanja"
               value={formatIDR(totalSpent)}
               icon={Wallet}
               tone="warning"
+              href="/dashboard/customer"
               className="[&_p]:break-words"
             />
           </>
@@ -146,9 +150,10 @@ export function CustomerDashboard() {
               />
             ) : (
               visible.map((order) => (
-                <div
+                <Link
                   key={order.id}
-                  className="group flex flex-col gap-4 rounded-2xl border border-border p-5 transition-shadow duration-base hover:shadow-card sm:flex-row sm:items-center sm:justify-between"
+                  href={`/orders/${order.id}`}
+                  className="focus-ring group flex flex-col gap-4 rounded-2xl border border-border p-5 transition-[shadow,border-color] duration-base hover:shadow-card hover:border-primary/40 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 font-medium">
@@ -184,13 +189,12 @@ export function CustomerDashboard() {
                         {new Date(order.createdAt).toLocaleDateString("id-ID")}
                       </div>
                     </div>
-                    <Link href={`/orders/${order.id}`}>
-                      <Button size="sm" variant="outline">
-                        Lihat <ArrowRight className="ml-1 h-3 w-3" aria-hidden />
-                      </Button>
-                    </Link>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-0.5 group-hover:text-primary-strong"
+                      aria-hidden
+                    />
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>

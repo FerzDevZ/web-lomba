@@ -195,7 +195,7 @@ export default async function HomePage() {
           </div>
         </Reveal>
 
-        <div className="grid auto-rows-fr gap-8 md:grid-cols-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
           {[
             {
               icon: Search,
@@ -226,7 +226,7 @@ export default async function HomePage() {
             const isLast = i === 3;
             return (
               <Reveal key={s.step} delay={i * 0.1} className="h-full">
-                <div className="group relative flex h-full min-h-[240px] flex-col rounded-3xl border border-border bg-card p-8 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:border-primary/30 hover:shadow-card-lg hover:-translate-y-0.5">
+                <div className="group relative flex h-full min-h-[240px] min-w-[260px] snap-start flex-col rounded-3xl border border-border bg-card p-8 transition-[transform,box-shadow,border-color] duration-200 ease-smooth hover:border-primary/30 hover:shadow-card-lg hover:-translate-y-0.5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
                       <Icon className="h-5 w-5" />
@@ -247,6 +247,12 @@ export default async function HomePage() {
               </Reveal>
             );
           })}
+        </div>
+        {/* Mobile: scroll indicator dots */}
+        <div className="mt-6 flex justify-center gap-1.5 md:hidden" aria-hidden>
+          {[0,1,2,3].map((i) => (
+            <span key={i} className={`h-1.5 rounded-full transition-all ${i === 0 ? "w-6 bg-primary" : "w-1.5 bg-muted"}`} />
+          ))}
         </div>
       </section>
 

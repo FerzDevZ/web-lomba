@@ -118,12 +118,14 @@ export default async function ProviderDashboardPage() {
           value={totalCount}
           icon={Store}
           tone="primary"
+          href="/dashboard/provider/buka-jasa"
         />
         <StatCard
           label="Nilai Portofolio"
           value={formatIDR(totalValue)}
           icon={Wallet}
           tone="success"
+          href="/dashboard/provider/buka-jasa"
         />
         <StatCard
           label="Order Masuk"
@@ -131,12 +133,14 @@ export default async function ProviderDashboardPage() {
           icon={Inbox}
           tone="warning"
           hint="Menunggu + dikerjakan"
+          href="/dashboard/provider"
         />
         <StatCard
           label="Order Hari Ini"
           value={todayOrders}
           icon={Clock}
           tone="info"
+          href="/dashboard/provider"
         />
       </div>
 
