@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { GripVertical, Inbox, Loader2 } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
 import { sameId } from "@/lib/ids"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import {
   canTransition,
   isOrderStatus,
@@ -283,7 +284,7 @@ export function OrderKanban() {
       orderId: string | number
       status: OrderStatus
     }) => {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await csrfFetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),

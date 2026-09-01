@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
-import { isCsrfValid } from "@/lib/csrf"
+import { isCsrfValid, generateCsrfToken } from "@/lib/csrf"
 
 // Halaman yang boleh diakses tanpa login
 const PUBLIC_PATHS = [
@@ -65,7 +65,17 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ error: "CSRF validation failed" }, { status: 403 })
       }
     }
-    return NextResponse.next()
+    const res = NextResponse.next()
+    // Set csrf-token cookie jika belum ada — dibaca oleh csrfFetch di client
+    if (!request.cookies.has("csrf-token")) {
+      res.cookies.set("csrf-token", generateCsrfToken(), {
+        httpOnly: false,
+        sameSite: "strict",
+        path: "/",
+        maxAge: 60 * 60 * 24, // 1 hari
+      })
+    }
+    return res
   }
 
   const isPublic = PUBLIC_PATHS.some(

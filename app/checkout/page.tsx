@@ -39,6 +39,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { formatIDR } from "@/lib/utils"
+import { csrfFetch } from "@/lib/csrf-fetch"
 
 type ServiceDetail = {
   id: string | number
@@ -335,7 +336,7 @@ function CheckoutContent() {
     setError("")
 
     try {
-      const res = await fetch("/api/orders", {
+      const res = await csrfFetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { Bell } from "lucide-react"
+import { csrfFetch } from "@/lib/csrf-fetch"
 
 type NotificationItem = {
   orderId: string | number
@@ -34,7 +35,7 @@ export function NotificationBell() {
     if (!session?.user || count === 0) return
     setCount(0)
     try {
-      await fetch("/api/notifications", { method: "PATCH" })
+      await csrfFetch("/api/notifications", { method: "PATCH" })
     } catch {
       // abaikan — count sudah 0 di UI
     }

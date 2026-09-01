@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { Heart, Star, Clock, Trash2 } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/category-icons"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import Image from "next/image"
 
 type SavedServiceItem = {
@@ -44,10 +45,10 @@ export function SavedServices() {
 
   const removeMutation = useMutation({
     mutationFn: async (serviceId: string | number) => {
-      const res = await fetch("/api/saved", {
+      const res = await csrfFetch("/api/saved", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serviceId }),
+        body: JSON.stringify({ serviceId: String(serviceId) }),
       })
       if (!res.ok) throw new Error("Gagal menghapus")
       return res.json()

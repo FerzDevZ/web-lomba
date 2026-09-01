@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -124,7 +125,7 @@ export function BukaJasaForm({ onCreated }: { onCreated: (id: string | number) =
 
   const createMutation = useMutation({
     mutationFn: async (payload: FormState) => {
-      const res = await fetch("/api/services", {
+      const res = await csrfFetch("/api/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -33,6 +33,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { formatIDR } from "@/lib/utils"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import { MessageThread } from "@/components/orders/message-thread"
 import { OrderStatusBadge } from "@/components/orders/order-status-badge"
 import { OrderTimeline } from "@/components/orders/order-timeline"
@@ -130,7 +131,7 @@ function OrderDetailContent() {
     }
     setBusy(true)
     setError("")
-    const res = await fetch(`/api/orders/${order.id}`, {
+    const res = await csrfFetch(`/api/orders/${order.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: next }),
@@ -164,7 +165,7 @@ function OrderDetailContent() {
     }
     setBusy(true)
     setError("")
-    const res = await fetch("/api/reviews", {
+    const res = await csrfFetch("/api/reviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ orderId: order.id, rating, comment }),

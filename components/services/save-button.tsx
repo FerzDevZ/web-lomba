@@ -7,6 +7,7 @@ import { Heart } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { csrfFetch } from "@/lib/csrf-fetch"
 
 // Tombol simpan jasa (wishlist). Menampilkan status "disimpan" berdasarkan
 // ketersediaan sesi; untuk pengguna yang belum login akan diarahkan ke halaman masuk.
@@ -58,7 +59,7 @@ export function SaveButton({
     setChecked(true)
     setLoading(true)
     try {
-      const res = await fetch("/api/saved", {
+      const res = await csrfFetch("/api/saved", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serviceId: String(serviceId) }),

@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { ServiceStatusBadge } from "@/components/orders/order-status-badge"
 import { Eye, EyeOff, ExternalLink, Loader2, PlusCircle } from "lucide-react"
 import { formatIDR } from "@/lib/utils"
+import { csrfFetch } from "@/lib/csrf-fetch"
 
 type OwnService = {
   id: string | number
@@ -46,7 +47,7 @@ export function ProviderServiceList({ enabled }: { enabled: boolean }) {
   const toggleMutation = useMutation({
     mutationFn: async (service: OwnService) => {
       const next = service.status === "ACTIVE" ? "DRAFT" : "ACTIVE"
-      const res = await fetch(`/api/services/${service.id}`, {
+      const res = await csrfFetch(`/api/services/${service.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next }),
