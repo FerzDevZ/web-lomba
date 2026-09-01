@@ -105,7 +105,7 @@ function ProviderCardLink({
   return (
     <Link
       href={`/provider/${service.provider.id}`}
-      className="focus-ring group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
+      className="focus-ring group flex min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40 sm:gap-4 sm:p-5"
     >
       {service.provider.avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -362,14 +362,14 @@ export default function ServiceDetailClient({
 
           {/* Judul + meta singkat tetap di kiri agar sticky kanan fokus ke harga/CTA.
               Di layar besar judul duplicate di kanan dihilangkan untuk hindari duplikasi. */}
-          <div className="lg:hidden">
+          <div className="overflow-hidden lg:hidden">
             <RatingStars
               value={service.ratingAvg}
               size="lg"
               showValue
               reviewCount={service.totalReviews}
             />
-            <div className="mt-3 text-3xl font-extrabold tracking-tight" aria-hidden="true">
+            <div className="mt-3 line-clamp-2 text-2xl font-extrabold tracking-tight sm:text-3xl" aria-hidden="true">
               {service.title}
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -389,9 +389,9 @@ export default function ServiceDetailClient({
           {/* Harga + provider untuk mobile — di desktop versi ini disembunyikan
               karena sudah ada di kolom kanan yang sticky. Tanpa ini, urutan
               mobile jadi: galeri → judul → tabs, harga malah di bawah ulasan. */}
-          <div className="space-y-4 lg:hidden">
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
-              <div className="text-2xl font-extrabold text-primary-strong sm:text-3xl">
+          <div className="space-y-4 overflow-hidden lg:hidden">
+            <div className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
+              <div className="truncate text-xl font-extrabold text-primary-strong sm:text-2xl">
                 {formatIDR(service.price)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
@@ -642,7 +642,7 @@ export default function ServiceDetailClient({
         {/* Kanan: order box sticky — hanya di desktop. Di mobile versi
             lg:hidden di kiri sudah tampil, jadi di sini hidden lg:block agar
             tidak duplikat dan tidak tumpang tindih dengan tabs. */}
-        <div className="hidden min-w-0 space-y-5 lg:block lg:sticky lg:top-24 lg:self-start">
+        <div className="hidden min-w-0 space-y-5 overflow-hidden lg:block lg:sticky lg:top-24 lg:self-start">
           <div>
             <RatingStars
               value={service.ratingAvg}
@@ -650,7 +650,7 @@ export default function ServiceDetailClient({
               showValue
               reviewCount={service.totalReviews}
             />
-            <div className="mt-3 text-3xl font-extrabold tracking-tight" aria-hidden="true">
+            <div className="mt-3 truncate text-2xl font-extrabold tracking-tight xl:text-3xl" aria-hidden="true">
               {service.title}
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -667,23 +667,23 @@ export default function ServiceDetailClient({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
-            <div className="text-4xl font-extrabold text-primary-strong">
+          <div className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-6">
+            <div className="truncate text-3xl font-extrabold text-primary-strong xl:text-4xl">
               {formatIDR(service.price)}
             </div>
             <div className="mt-1 text-sm text-muted-foreground">
               per jasa • estimasi selesai dalam {service.deliveryTimeDays} hari
             </div>
-            <div className="mt-5 flex flex-col gap-3 lg:flex-row">
+            <div className="mt-5 flex flex-col gap-2 lg:flex-row lg:items-center">
               <Button size="lg" className="flex-1 shadow-glow" asChild>
                 <Link href={checkoutHref}>Pesan Sekarang</Link>
               </Button>
-              <div className="flex gap-2">
-                <SaveButton serviceId={service.id} size="lg" className="flex-1 sm:flex-none" />
+              <div className="flex items-center gap-1.5">
+                <SaveButton serviceId={service.id} size="default" />
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-12 w-12 shrink-0"
+                  className="h-10 w-10 shrink-0"
                   aria-label="Bagikan jasa ini"
                   onClick={() => {
                     const url = typeof window !== "undefined" ? window.location.href : ""
