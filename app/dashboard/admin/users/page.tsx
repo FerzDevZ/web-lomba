@@ -15,6 +15,7 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { PageHeader } from "@/components/layout/page-shell"
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
 import { toast } from "sonner"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import {
   Users,
   UserRound,
@@ -74,7 +75,7 @@ export default function AdminUsersPage() {
 
   const impersonate = async (user: AdminUser) => {
     setBusyId(user.id)
-    const res = await fetch(`/api/admin/users/${user.id}/impersonate`, {
+    const res = await csrfFetch(`/api/admin/users/${user.id}/impersonate`, {
       method: "POST",
     })
     if (res.ok) {

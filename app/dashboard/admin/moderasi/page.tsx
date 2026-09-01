@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { csrfFetch } from "@/lib/csrf-fetch"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -56,7 +57,7 @@ export default function ModerasiPage() {
   // di-refetch dan jasa tetap muncul tanpa penjelasan apa pun).
   const activateMutation = useMutation({
     mutationFn: async (service: DraftService) => {
-      const res = await fetch(`/api/services/${service.id}`, {
+      const res = await csrfFetch(`/api/services/${service.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ACTIVE" }),
