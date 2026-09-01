@@ -273,3 +273,43 @@
 .stagger-2 { animation-delay: 0.3s; }
 .stagger-3 { animation-delay: 0.45s; }
 .stagger-4 { animation-delay: 0.6s; }
+
+/* ── Print stylesheet ─────────────────────────────────────────────────── */
+@media print {
+  /* Sembunyikan elemen non-konten */
+  header, nav, footer, [role="dialog"], .fixed,
+  button:not([type="submit"]), .no-print,
+  [data-hero-orb], [data-hero-float] {
+    display: none !important;
+  }
+
+  /* Reset warna untuk print */
+  body, .bg-background, .bg-card {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hapus efek visual */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Pastikan konten terbaca */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  /* Break sebelum section besar */
+  section, .break-before {
+    page-break-before: avoid;
+  }
+
+  /* Hindari break di tengah kartu */
+  .rounded-2xl, .rounded-3xl, Card {
+    page-break-inside: avoid;
+  }
+}

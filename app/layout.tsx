@@ -148,6 +148,10 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#F97316" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className={`${sans.variable} ${serif.variable} font-sans`}>
         <ThemeProvider>

@@ -34,6 +34,7 @@ type ServicesResponse = {
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Terbaru" },
+  { value: "popular", label: "Terlaris" },
   { value: "price-asc", label: "Harga Terendah" },
   { value: "price-desc", label: "Harga Tertinggi" },
   { value: "rating", label: "Rating Tertinggi" },
@@ -439,13 +440,14 @@ function CatalogContent() {
       </div>
 
       {/* Action bar mobile: glass + safe-area */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
-          <span className="text-sm text-muted-foreground">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <span className="shrink-0 text-xs text-muted-foreground sm:text-sm">
             {isLoading ? "Memuat…" : `${data?.total ?? 0} jasa`}
           </span>
           <Button
             variant="outline"
+            size="sm"
             className="ml-auto"
             onClick={() => setDrawerOpen(true)}
           >

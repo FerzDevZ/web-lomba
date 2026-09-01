@@ -389,17 +389,17 @@ export default function ServiceDetailClient({
           {/* Harga + provider untuk mobile — di desktop versi ini disembunyikan
               karena sudah ada di kolom kanan yang sticky. Tanpa ini, urutan
               mobile jadi: galeri → judul → tabs, harga malah di bawah ulasan. */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 lg:hidden">
-            <div className="text-3xl font-extrabold text-primary-strong">
-              {formatIDR(service.price)}
+          <div className="space-y-4 lg:hidden">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
+              <div className="text-2xl font-extrabold text-primary-strong sm:text-3xl">
+                {formatIDR(service.price)}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                per jasa • estimasi {service.deliveryTimeDays} hari
+              </div>
             </div>
-            <div className="mt-1 text-sm text-muted-foreground">
-              per jasa • estimasi selesai dalam {service.deliveryTimeDays} hari
-            </div>
-          </div>
-          <TrustPointsList className="space-y-2 lg:hidden" />
-          <div className="lg:hidden">
-            <ProviderCardLink service={service} providerStats={providerStats} avatarSize="h-12 w-12" textSize="text-base" />
+            <TrustPointsList className="space-y-2" />
+            <ProviderCardLink service={service} providerStats={providerStats} avatarSize="h-11 w-11" textSize="text-base" />
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -414,17 +414,17 @@ export default function ServiceDetailClient({
             {/* TabsContent dirender ulang saat berganti nilai, jadi
                 animate-rise-in terpicu tiap perpindahan tab. */}
             <TabsContent value="description" id="tab-description" className="mt-8 animate-rise-in scroll-mt-24">
-              <div className="grid max-w-4xl gap-6 lg:grid-cols-[1fr_280px]">
+              <div className="space-y-6 lg:grid lg:max-w-4xl lg:grid-cols-[1fr_280px] lg:gap-6">
                 <div className="leading-relaxed text-muted-foreground">
-                  <p className="text-base">{service.description}</p>
-                  <p className="mt-4 text-sm">
+                  <p className="text-sm sm:text-base">{service.description}</p>
+                  <p className="mt-4 text-xs text-muted-foreground sm:text-sm">
                     Setelah pemesanan, Anda dapat menambahkan catatan, alamat
                     pelaksanaan, dan jadwal — lalu berkomunikasi langsung dengan
                     penyedia jasa melalui halaman pesanan.
                   </p>
                 </div>
                 <Card>
-                  <CardContent className="space-y-3 p-5 text-sm">
+                  <CardContent className="space-y-3 p-4 text-sm sm:p-5">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Durasi kerja</span>
                       <span className="font-semibold">
@@ -510,18 +510,24 @@ export default function ServiceDetailClient({
                         key={review.id}
                         className="rounded-2xl border border-border bg-card p-6"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-start gap-3">
                           {review.reviewer.avatarUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={review.reviewer.avatarUrl} alt={review.reviewer.name ?? "Reviewer"} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                            <img src={review.reviewer.avatarUrl} alt={review.reviewer.name ?? "Reviewer"} className="h-9 w-9 shrink-0 rounded-full object-cover sm:h-10 sm:w-10" />
                           ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-strong">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-strong sm:h-10 sm:w-10">
                               {(review.reviewer.name ?? "P").charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <div>
-                            <div className="text-sm font-semibold">
-                              {review.reviewer.name ?? "Customer"}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                              <span className="text-sm font-semibold">
+                                {review.reviewer.name ?? "Customer"}
+                              </span>
+                              <RatingStars
+                                value={review.rating}
+                                className="shrink-0"
+                              />
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {new Date(review.createdAt).toLocaleDateString(
@@ -530,10 +536,6 @@ export default function ServiceDetailClient({
                               )}
                             </div>
                           </div>
-                          <RatingStars
-                            value={review.rating}
-                            className="ml-auto"
-                          />
                         </div>
                         {review.comment && (
                           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -720,25 +722,26 @@ export default function ServiceDetailClient({
         </div>
       )}
 
-      {/* Action bar mobile — glass */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
-          <div className="min-w-0">
+      {/* Action bar mobile — glass + safe-area */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-2">
+          <div className="min-w-0 shrink">
             <div className="text-2xs uppercase tracking-wide text-muted-foreground">
-              Harga jasa
+              Harga
             </div>
-            <div className="truncate text-lg font-extrabold text-primary-strong">
+            <div className="truncate text-base font-extrabold text-primary-strong sm:text-lg">
               {formatIDR(service.price)}
             </div>
           </div>
           <SaveButton
             serviceId={service.id}
-            className="shrink-0"
+            className="h-9 w-9 shrink-0 p-0"
+            size="icon"
           />
           <Button
-            size="lg"
+            size="icon"
             variant="outline"
-            className="shrink-0"
+            className="h-9 w-9 shrink-0"
             aria-label="Bagikan jasa ini"
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : ""
@@ -750,8 +753,8 @@ export default function ServiceDetailClient({
           >
             <Share2 className="h-4 w-4" aria-hidden />
           </Button>
-          <Button size="lg" className="flex-1 shadow-glow" asChild>
-            <Link href={checkoutHref}>Pesan Sekarang</Link>
+          <Button size="sm" className="flex-1 shadow-glow sm:h-12 sm:text-base" asChild>
+            <Link href={checkoutHref}>Pesan</Link>
           </Button>
         </div>
       </div>

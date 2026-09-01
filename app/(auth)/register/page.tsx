@@ -15,7 +15,20 @@ import {
 } from "@/components/ui/card";
 import { RadioCardGroup } from "@/components/ui/radio-card-group";
 
-type Role = "CUSTOMER" | "PROVIDER";
+type Role = "CUSTOMER" | "PROVIDER"
+
+function passwordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0
+  if (pw.length >= 6) score++
+  if (pw.length >= 10) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^A-Za-z0-9]/.test(pw)) score++
+  if (score <= 1) return { score, label: "Lemah", color: "bg-destructive" }
+  if (score <= 2) return { score, label: "Sedang", color: "bg-warning" }
+  if (score <= 3) return { score, label: "Kuat", color: "bg-success" }
+  return { score, label: "Sangat Kuat", color: "bg-success" }
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -134,6 +147,25 @@ export default function RegisterPage() {
               required
               minLength={6}
             />
+            {form.password.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        i <= passwordStrength(form.password).score
+                          ? passwordStrength(form.password).color
+                          : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-2xs text-muted-foreground">
+                  Kekuatan: <span className="font-medium text-foreground">{passwordStrength(form.password).label}</span>
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

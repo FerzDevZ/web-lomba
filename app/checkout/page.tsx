@@ -177,14 +177,14 @@ function CheckoutSuccess({ orderId }: { orderId: string | number }) {
   }, [])
 
   const waText = encodeURIComponent(
-    `Pesanan #${orderId} di ServisLokal berhasil dibuat! Menunggu konfirmasi provider.`
+    `Pesanan #${orderId} di ServisLokal berhasil dibuat! Menunggu konfirmasi provider. Lihat detail: ${typeof window !== "undefined" ? window.location.origin : ""}/orders/${orderId}`
   )
 
   return (
     <PageShell width="prose" className="py-20">
       <Card className="overflow-hidden text-center">
         <div className="bg-brand-gradient h-1.5 w-full" aria-hidden />
-        <CardContent className="space-y-5 p-10">
+        <CardContent className="space-y-5 p-6 sm:p-10">
           <div className="animate-success-pop mx-auto" aria-hidden>
             <svg
               className="mx-auto h-20 w-20"
@@ -262,14 +262,41 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   const slug = searchParams.get("service")
 
-  const [address, setAddress] = useState("")
+  // Auto-save draft ke localStorage
+  const DRAFT_KEY = `checkout-draft-${slug}`
+  const [address, setAddress] = useState(() => {
+    if (typeof window === "undefined") return ""
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}" ).address || "" } catch { return "" }
+  })
   const [addressTouched, setAddressTouched] = useState(false)
-  const [deadline, setDeadline] = useState("")
-  const [notes, setNotes] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("transfer")
+  const [deadline, setDeadline] = useState(() => {
+    if (typeof window === "undefined") return ""
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}" ).deadline || "" } catch { return "" }
+  })
+  const [notes, setNotes] = useState(() => {
+    if (typeof window === "undefined") return ""
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}" ).notes || "" } catch { return "" }
+  })
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(() => {
+    if (typeof window === "undefined") return "transfer"
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}" ).paymentMethod || "transfer" } catch { return "transfer" }
+  })
+
+  // Simpan draft setiap perubahan
+  useEffect(() => {
+    if (!slug) return
+    const draft = { address, deadline, notes, paymentMethod }
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+  }, [address, deadline, notes, paymentMethod, slug, DRAFT_KEY])
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState<number | null>(null)
+
+  // Bersihkan draft saat success
+  useEffect(() => {
+    if (success && slug) localStorage.removeItem(DRAFT_KEY)
+  }, [success, slug, DRAFT_KEY])
 
   const { data: session } = useSession()
 
@@ -429,7 +456,7 @@ function CheckoutContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start justify-between gap-4 rounded-lg bg-muted/60 p-4">
+              <div className="flex items-start justify-between gap-3 rounded-lg bg-muted/60 p-3 sm:p-4">
                 <div className="flex min-w-0 items-center gap-3">
                   {service.imageUrl && (
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
@@ -449,8 +476,7 @@ function CheckoutContent() {
                     </div>
                   </div>
                 </div>
-                <div className="shrink-0 text-right">
-                  <div className="text-xl font-bold text-primary-strong">
+                <div className="shrink-0 text-right">                    <div className="text-base font-bold text-primary-strong sm:text-xl">
                     {formatIDR(service.price)}
                   </div>
                   <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
@@ -498,6 +524,27 @@ function CheckoutContent() {
 
               <div className="space-y-2">
                 <Label htmlFor="deadline">Jadwal yang Diinginkan</Label>
+                <div className="flex flex-wrap gap-2">
+                  {["Segera", "Minggu ini", "2 minggu", "Bulan depan"].map((label) => {
+                    const days = label === "Segera" ? 1 : label === "Minggu ini" ? 3 : label === "2 minggu" ? 14 : 30
+                    const d = new Date(Date.now() + days * 86400000).toISOString().split("T")[0]
+                    const active = deadline === d
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setDeadline(deadline === d ? "" : d)}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                          active
+                            ? "border-primary bg-primary/10 text-primary-strong"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
                 <Input
                   id="deadline"
                   type="date"
@@ -621,12 +668,12 @@ function CheckoutContent() {
 
         {/* Action bar mobile — glass + safe-area */}
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center gap-4">
-            <div className="min-w-0">
+          <div className="mx-auto flex max-w-7xl items-center gap-3">
+            <div className="min-w-0 shrink">
               <div className="text-2xs uppercase tracking-wide text-muted-foreground">
                 Total
               </div>
-              <div className="truncate text-lg font-bold text-primary-strong">
+              <div className="truncate text-base font-bold text-primary-strong sm:text-lg">
                 {formatIDR(service.price)}
               </div>
             </div>

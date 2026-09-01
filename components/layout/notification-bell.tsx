@@ -30,6 +30,16 @@ export function NotificationBell() {
     }
   }, [session])
 
+  const markRead = React.useCallback(async () => {
+    if (!session?.user || count === 0) return
+    setCount(0)
+    try {
+      await fetch("/api/notifications", { method: "PATCH" })
+    } catch {
+      // abaikan — count sudah 0 di UI
+    }
+  }, [session, count])
+
   React.useEffect(() => {
     load()
     // Polling ringan setiap 60 detik, jeda saat tab hidden (P1 perf)
@@ -51,7 +61,7 @@ export function NotificationBell() {
     <div className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => { setOpen((o) => !o); if (!open) markRead() }}
         aria-label={count > 0 ? `${count} notifikasi baru` : "Notifikasi"}
         aria-expanded={open}
         aria-haspopup="dialog"
