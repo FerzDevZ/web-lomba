@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +15,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RadioCardGroup } from "@/components/ui/radio-card-group";
+import { InlineError } from "@/components/ui/error-panel";
 
 type Role = "CUSTOMER" | "PROVIDER"
+
+// Validation schemas
+const registerSchema = z.object({
+  name: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
+  email: z.string().min(1, "Email wajib diisi").email("Format email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+  phone: z.string().optional().refine(
+    (val) => !val || /^[0-9+\-\s()]{8,20}$/.test(val),
+    "Format nomor HP tidak valid"
+  ),
+  location: z.string().optional(),
+  role: z.enum(["CUSTOMER", "PROVIDER"]),
+})
+
+type FormValues = z.infer<typeof registerSchema>
 
 function passwordStrength(pw: string): { score: number; label: string; color: string } {
   let score = 0
@@ -32,28 +49,61 @@ function passwordStrength(pw: string): { score: number; label: string; color: st
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormValues>({
     name: "",
     email: "",
     password: "",
     phone: "",
     location: "",
-    role: "CUSTOMER" as Role,
+    role: "CUSTOMER",
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormValues, boolean>>>({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Generic supaya key harus benar-benar ada di form dan value bertipe sesuai
-  // field-nya — sebelumnya (string, string) menerima key apa pun tanpa error.
-  const update = <K extends keyof typeof form>(
-    key: K,
-    value: (typeof form)[K]
-  ) => setForm((f) => ({ ...f, [key]: value }));
+  const validateField = useCallback(<K extends keyof FormValues>(key: K, value: FormValues[K]) => {
+    const result = registerSchema.shape[key].safeParse(value);
+    if (result.success) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    } else {
+      setErrors((prev) => ({ ...prev, [key]: result.error.issues[0]?.message }));
+    }
+  }, []);
+
+  const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    if (touched[key]) validateField(key, value);
+  };
+
+  const handleBlur = <K extends keyof FormValues>(key: K) => {
+    setTouched((prev) => ({ ...prev, [key]: true }));
+    validateField(key, form[key]);
+  };
+
+  const validateAll = (): boolean => {
+    const result = registerSchema.safeParse(form);
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
+    const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
+    for (const issue of result.error.issues) {
+      const path = issue.path[0] as keyof FormValues;
+      if (path && !fieldErrors[path]) {
+        fieldErrors[path] = issue.message;
+      }
+    }
+    setErrors(fieldErrors);
+    setTouched({ name: true, email: true, password: true, role: true });
+    return false;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateAll()) return;
     setLoading(true);
-    setError("");
+    setServerError("");
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -64,13 +114,11 @@ export default function RegisterPage() {
     const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      setError(data?.error ?? "Gagal mendaftar. Coba lagi.");
+      setServerError(data?.error ?? "Gagal mendaftar. Coba lagi.");
       setLoading(false);
       return;
     }
 
-    // loading dibiarkan true sampai navigasi selesai: kalau di-reset di sini,
-    // tombol aktif kembali selama transisi dan pendaftaran bisa terkirim dua kali.
     router.push("/login?registered=1");
   };
 
@@ -87,25 +135,33 @@ export default function RegisterPage() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nama Lengkap</Label>
+            <Label htmlFor="name">Nama Lengkap <span className="text-destructive-strong">*</span></Label>
             <Input
               id="name"
               placeholder="Nama Anda"
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
-              required
+              onBlur={() => handleBlur("name")}
+              aria-invalid={errors.name ? "true" : undefined}
+              aria-describedby={errors.name ? "name-error" : undefined}
+              className={errors.name && touched.name ? "border-destructive" : ""}
             />
+            {errors.name && touched.name && <InlineError message={errors.name} id="name-error" />}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email <span className="text-destructive-strong">*</span></Label>
             <Input
               id="email"
               type="email"
               placeholder="nama@email.com"
               value={form.email}
               onChange={(e) => update("email", e.target.value)}
-              required
+              onBlur={() => handleBlur("email")}
+              aria-invalid={errors.email ? "true" : undefined}
+              aria-describedby={errors.email ? "email-error" : undefined}
+              className={errors.email && touched.email ? "border-destructive" : ""}
             />
+            {errors.email && touched.email && <InlineError message={errors.email} id="email-error" />}
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">No. HP (opsional)</Label>
@@ -113,9 +169,14 @@ export default function RegisterPage() {
               id="phone"
               type="tel"
               placeholder="08xxxxxxxxxx"
-              value={form.phone}
+              value={form.phone ?? ""}
               onChange={(e) => update("phone", e.target.value)}
+              onBlur={() => handleBlur("phone")}
+              aria-invalid={errors.phone ? "true" : undefined}
+              aria-describedby={errors.phone ? "phone-error" : undefined}
+              className={errors.phone && touched.phone ? "border-destructive" : ""}
             />
+            {errors.phone && touched.phone && <InlineError message={errors.phone} id="phone-error" />}
           </div>
 
           {form.role === "PROVIDER" && (
@@ -127,7 +188,7 @@ export default function RegisterPage() {
               <Input
                 id="location"
                 placeholder="Contoh: Jakarta Selatan"
-                value={form.location}
+                value={form.location ?? ""}
                 onChange={(e) => update("location", e.target.value)}
                 required
               />
@@ -137,16 +198,19 @@ export default function RegisterPage() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Password <span className="text-destructive-strong">*</span></Label>
             <Input
               id="password"
               type="password"
               placeholder="Minimal 6 karakter"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
-              required
-              minLength={6}
+              onBlur={() => handleBlur("password")}
+              aria-invalid={errors.password ? "true" : undefined}
+              aria-describedby={errors.password ? "password-error" : undefined}
+              className={errors.password && touched.password ? "border-destructive" : ""}
             />
+            {errors.password && touched.password && <InlineError message={errors.password} id="password-error" />}
             {form.password.length > 0 && (
               <div className="space-y-1.5">
                 <div className="flex gap-1">
@@ -193,17 +257,24 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {error && (
+          {serverError && (
             <p
               role="alert"
               className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-strong"
             >
-              {error}
+              {serverError}
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Mendaftar..." : "Daftar Sekarang"}
+          <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+                Mendaftar...
+              </span>
+            ) : (
+              "Daftar Sekarang"
+            )}
           </Button>
         </form>
 

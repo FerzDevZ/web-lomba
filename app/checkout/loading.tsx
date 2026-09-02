@@ -4,7 +4,7 @@ import { PageShell } from "@/components/layout/page-shell"
 
 export default function Loading() {
   return (
-    <PageShell className="py-10">
+    <PageShell className="py-10 animate-fade-up">
       <div className="flex items-center justify-center gap-2">
         <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-px w-8" />

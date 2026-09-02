@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import {
   DndContext,
@@ -130,10 +130,12 @@ function DraggableCard({
   order,
   busy,
   onTransition,
+  onFocus,
 }: {
   order: ProviderOrder
   busy?: boolean
   onTransition: (order: ProviderOrder, next: OrderStatus) => void
+  onFocus?: (orderId: string | number) => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: order.id,
@@ -143,6 +145,10 @@ function DraggableCard({
     <div
       ref={setNodeRef}
       className={isDragging ? "opacity-40" : undefined}
+      onFocus={() => onFocus?.(order.id)}
+      tabIndex={0}
+      role="button"
+      aria-label={`Pesanan #${order.id} - ${order.service.title}. Gunakan panah untuk memindahkan status.`}
     >
       <div className="relative">
         {/* Pegangan drag eksplisit: tombol aksi & tautan tetap berfungsi
@@ -170,6 +176,7 @@ function Column({
   busyId,
   onTransition,
   activeStatus,
+  onOrderFocus,
 }: {
   col: { key: OrderStatus; dot: string }
   items: ProviderOrder[]
@@ -177,6 +184,7 @@ function Column({
   busyId?: string | number
   onTransition: (order: ProviderOrder, next: OrderStatus) => void
   activeStatus?: OrderStatus | null
+  onOrderFocus?: (orderId: string | number) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.key })
   const isValidTarget = !activeStatus || activeStatus === col.key || canTransition(activeStatus, col.key)
@@ -235,6 +243,7 @@ function Column({
               order={order}
               busy={busyId !== undefined && sameId(busyId, order.id)}
               onTransition={onTransition}
+              onFocus={onOrderFocus}
             />
           ))
         )}
@@ -382,6 +391,57 @@ export function OrderKanban() {
   const all = orders ?? []
   const activeStatus = activeOrder?.status as OrderStatus | undefined
 
+  // Keyboard shortcuts for kanban navigation
+  const [focusedOrderId, setFocusedOrderId] = useState<string | number | null>(null)
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!focusedOrderId) return
+      const order = all.find((o) => sameId(o.id, focusedOrderId))
+      if (!order || !isOrderStatus(order.status)) return
+
+      const currentStatus = order.status as OrderStatus
+
+      // ArrowRight: Move to next column
+      if (e.key === "ArrowRight") {
+        e.preventDefault()
+        const nextStatuses = ["PENDING", "IN_PROGRESS", "COMPLETED"]
+        const currentIdx = nextStatuses.indexOf(currentStatus)
+        if (currentIdx < nextStatuses.length - 1) {
+          const next = nextStatuses[currentIdx + 1] as OrderStatus
+          if (canTransition(currentStatus, next)) {
+            moveOrder(order.id, next)
+          }
+        }
+      }
+
+      // ArrowLeft: Move to previous column
+      if (e.key === "ArrowLeft") {
+        e.preventDefault()
+        const nextStatuses = ["PENDING", "IN_PROGRESS", "COMPLETED"]
+        const currentIdx = nextStatuses.indexOf(currentStatus)
+        if (currentIdx > 0) {
+          const prev = nextStatuses[currentIdx - 1] as OrderStatus
+          if (canTransition(currentStatus, prev)) {
+            moveOrder(order.id, prev)
+          }
+        }
+      }
+
+      // Enter: Open order details
+      if (e.key === "Enter") {
+        e.preventDefault()
+        window.location.href = `/orders/${order.id}`
+      }
+    },
+    [focusedOrderId, all, moveOrder]
+  )
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [handleKeyDown])
+
   return (
     <DndContext
       sensors={[pointerSensor, mouseSensor, touchSensor]}
@@ -399,6 +459,7 @@ export function OrderKanban() {
             busyId={busyId}
             activeStatus={activeStatus ?? null}
             onTransition={(order, next) => moveOrder(order.id, next)}
+            onOrderFocus={setFocusedOrderId}
           />
         ))}
       </div>

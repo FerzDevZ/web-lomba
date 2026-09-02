@@ -5,6 +5,7 @@ import "./globals.css"
 import { Providers } from "@/components/providers"
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/layout/Navbar"
+import { OfflineIndicator } from "@/components/layout/offline-indicator"
 import { Toaster } from "sonner"
 import { Mail, HelpCircle } from "lucide-react"
 import { SITE_URL } from "@/lib/site-url"
@@ -152,6 +153,24 @@ export default function RootLayout({
         <meta name="theme-color" content="#F97316" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    (registration) => {
+                      console.log('SW registered: ', registration)
+                    },
+                    (error) => {
+                      console.log('SW registration failed: ', error)
+                    }
+                  )
+                })
+              }
+            `,
+          }}
+        />
       </head>
       <body className={`${sans.variable} ${serif.variable} font-sans`}>
         <ThemeProvider>
@@ -237,6 +256,7 @@ export default function RootLayout({
               </div>
             </footer>
             <Toaster position="top-center" richColors closeButton />
+            <OfflineIndicator />
           </Providers>
         </ThemeProvider>
       </body>

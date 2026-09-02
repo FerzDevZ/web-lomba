@@ -60,14 +60,17 @@ export function ErrorPanel({
  */
 export function InlineError({
   message,
+  id,
   className,
 }: {
   message: string
+  id?: string
   className?: string
 }) {
   if (!message) return null
   return (
     <p
+      id={id}
       role="alert"
       className={cn("text-xs text-destructive-strong", className)}
     >

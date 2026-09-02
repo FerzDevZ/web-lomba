@@ -2,9 +2,27 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Search, X, ArrowRight } from "lucide-react"
+import { Search, X, ArrowRight, Clock } from "lucide-react"
 
 type Suggestion = { title: string; slug: string }
+
+const RECENT_SEARCHES_KEY = "servislokal-recent-searches"
+const MAX_RECENT = 5
+
+function getRecentSearches(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]")
+  } catch {
+    return []
+  }
+}
+
+function addRecentSearch(query: string) {
+  if (!query.trim()) return
+  const recent = getRecentSearches().filter((r) => r !== query.trim())
+  recent.unshift(query.trim())
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)))
+}
 
 function useSearchSuggestions(query: string) {
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([])
@@ -39,6 +57,49 @@ function useSearchSuggestions(query: string) {
   return { suggestions, loading }
 }
 
+function RecentSearches({
+  onSelect,
+}: {
+  onSelect: (q: string) => void
+}) {
+  const [recent, setRecent] = React.useState<string[]>([])
+
+  React.useEffect(() => {
+    setRecent(getRecentSearches())
+  }, [])
+
+  if (recent.length === 0) return null
+
+  return (
+    <div>
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-1">
+        <span className="text-xs font-medium text-muted-foreground">Pencarian Terakhir</span>
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.removeItem(RECENT_SEARCHES_KEY)
+            setRecent([])
+          }}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          Hapus
+        </button>
+      </div>
+      {recent.map((q) => (
+        <button
+          key={q}
+          type="button"
+          onClick={() => onSelect(q)}
+          className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-sm transition-colors hover:bg-accent/60"
+        >
+          <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" aria-hidden />
+          <span className="truncate text-foreground/80">{q}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function SuggestionList({
   suggestions,
   loading,
@@ -46,6 +107,7 @@ function SuggestionList({
   onSelect,
   activeIdx,
   setActiveIdx,
+  onRecentSelect,
 }: {
   suggestions: Suggestion[]
   loading: boolean
@@ -53,8 +115,12 @@ function SuggestionList({
   onSelect: (s: Suggestion) => void
   activeIdx: number
   setActiveIdx: (n: number) => void
+  onRecentSelect?: (q: string) => void
 }) {
   if (query.trim().length < 2) {
+    if (onRecentSelect) {
+      return <RecentSearches onSelect={onRecentSelect} />
+    }
     return (
       <div className="p-3 text-xs text-muted-foreground">
         Ketik minimal 2 huruf — contoh: <span className="font-medium text-foreground">AC</span>, <span className="font-medium text-foreground">listrik</span>
@@ -183,12 +249,24 @@ export function SearchBar() {
   const handleSelect = (s: Suggestion) => {
     setOpen(false)
     setQuery(s.title)
+    addRecentSearch(s.title)
     router.push(`/service/${s.slug}`)
   }
   const handleMobileSelect = (s: Suggestion) => {
     setMobileOpen(false)
     setMobileSuggestOpen(false)
+    addRecentSearch(s.title)
     router.push(`/service/${s.slug}`)
+  }
+  const handleRecentSelect = (q: string) => {
+    setQuery(q)
+    setOpen(true)
+    setActiveIdx(0)
+  }
+  const handleMobileRecentSelect = (q: string) => {
+    setMobileQuery(q)
+    setMobileSuggestOpen(true)
+    setMobileActiveIdx(0)
   }
 
   const onDesktopKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -236,7 +314,7 @@ export function SearchBar() {
         </form>
         {open && (
           <div id="search-suggestions" className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-border bg-card shadow-card-lg">
-            <SuggestionList suggestions={suggestions} loading={loading} query={query} onSelect={handleSelect} activeIdx={activeIdx} setActiveIdx={setActiveIdx} />
+            <SuggestionList suggestions={suggestions} loading={loading} query={query} onSelect={handleSelect} activeIdx={activeIdx} setActiveIdx={setActiveIdx} onRecentSelect={handleRecentSelect} />
             <div className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground flex items-center justify-between">
               <span>Enter untuk pilih • Esc tutup</span>
               <a href={query.trim() ? `/services?search=${encodeURIComponent(query.trim())}` : "/services"} className="font-medium text-primary-strong hover:underline">Lihat semua →</a>
@@ -297,7 +375,7 @@ export function SearchBar() {
             </form>
             {mobileSuggestOpen && (
               <div id="mobile-search-suggestions" className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
-                <SuggestionList suggestions={mobileSuggestions} loading={mobileLoading} query={mobileQuery} onSelect={handleMobileSelect} activeIdx={mobileActiveIdx} setActiveIdx={setMobileActiveIdx} />
+                <SuggestionList suggestions={mobileSuggestions} loading={mobileLoading} query={mobileQuery} onSelect={handleMobileSelect} activeIdx={mobileActiveIdx} setActiveIdx={setMobileActiveIdx} onRecentSelect={handleMobileRecentSelect} />
               </div>
             )}
           </div>

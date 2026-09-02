@@ -12,6 +12,9 @@ const nextConfig = {
   },
   images: {
     dangerouslyAllowSVG: false,
+    // Format gambar optimal: AVIF > WebP > JPEG. Browser modern mendukung AVIF
+    // yang 50% lebih kecil dari JPEG pada kualitas yang sama.
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'i.pravatar.cc' },

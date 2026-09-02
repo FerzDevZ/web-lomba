@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 animate-fade-up">
       {/* Hero skeleton */}
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">

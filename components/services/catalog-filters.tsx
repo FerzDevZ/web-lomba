@@ -137,10 +137,9 @@ export function CatalogFilterPanel({
           <button
             type="button"
             onClick={() => onChange({ category: "" })}
-            aria-pressed={category === ""}
-            className={`focus-ring w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+            aria-pressed={category === ""}              className={`focus-ring w-full rounded-lg px-3 py-2 text-left text-sm transition-all duration-fast active:scale-[0.97] ${
               category === ""
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             }`}
           >
@@ -154,9 +153,9 @@ export function CatalogFilterPanel({
                 type="button"
                 onClick={() => onChange({ category: String(cat.id) })}
                 aria-pressed={active}
-                className={`focus-ring flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                className={`focus-ring flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all duration-fast active:scale-[0.97] ${
                   active
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
@@ -183,7 +182,7 @@ export function CatalogFilterPanel({
               key={prov}
               type="button"
               onClick={() => onChange({ location: prov })}
-              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${location === prov ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-fast active:scale-[0.95] ${location === prov ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground hover:bg-accent"}`}
             >
               {prov.split(" ").slice(-1)[0]}
             </button>
@@ -235,7 +234,7 @@ export function CatalogFilterPanel({
               key={p.label}
               type="button"
               onClick={() => onChange({ minPrice: p.min, maxPrice: p.max })}
-              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${minPrice===p.min && maxPrice===p.max ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-fast active:scale-[0.95] ${minPrice===p.min && maxPrice===p.max ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground hover:bg-accent"}`}
             >
               {p.label}
             </button>
@@ -254,9 +253,9 @@ export function CatalogFilterPanel({
               type="button"
               onClick={() => onChange({ rating: rating === r ? 0 : r })}
               aria-pressed={rating === r}
-              className={`focus-ring flex items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`focus-ring flex items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-fast active:scale-[0.95] ${
                 rating === r
-                  ? "bg-rating text-background"
+                  ? "bg-rating text-background shadow-sm"
                   : "bg-muted text-muted-foreground hover:bg-accent"
               }`}
             >

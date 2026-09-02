@@ -55,9 +55,18 @@ export function SaveButton({
     // Optimistic flip — tombol terasa instan; rollback bila gagal.
     const prev = saved
     const wasChecked = checked
-    setSaved(!saved)
+    const newSaved = !saved
+    setSaved(newSaved)
     setChecked(true)
     setLoading(true)
+
+    // Haptic feedback on mobile
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        (navigator as unknown as { vibrate: (n: number) => void }).vibrate(10)
+      } catch {}
+    }
+
     try {
       const res = await csrfFetch("/api/saved", {
         method: "POST",
@@ -108,8 +117,8 @@ export function SaveButton({
     >
       <Heart
         className={cn(
-          "h-4 w-4 transition-transform",
-          isSaved && "fill-current scale-110"
+          "h-4 w-4 transition-all duration-fast",
+          isSaved && "fill-current scale-110 text-destructive animate-[pulse_0.3s_ease-in-out]"
         )}
       />
       {size !== "icon" && (

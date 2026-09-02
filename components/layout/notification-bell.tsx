@@ -74,6 +74,10 @@ export function NotificationBell() {
             {count > 9 ? "9+" : count}
           </span>
         )}
+        {/* Live region untuk screen reader — memberitahu jumlah notifikasi baru */}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">
+          {count > 0 ? `${count} notifikasi baru` : ""}
+        </span>
       </button>
 
       {open && (

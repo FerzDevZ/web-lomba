@@ -84,7 +84,7 @@ export function ReviewForm({
                   onFocus={() => setHoverRating(star)}
                   onBlur={() => setHoverRating(0)}
                   aria-label={`${star} bintang — ${RATING_LABELS[star]}`}
-                  className="focus-ring rounded-lg p-0.5 transition-all duration-fast hover:scale-110"
+                  className="focus-ring rounded-lg p-0.5 transition-all duration-fast hover:scale-125 active:scale-95"
                 >
                   <Star
                     className={`h-8 w-8 transition-colors duration-fast ${
@@ -121,8 +121,20 @@ export function ReviewForm({
           </div>
 
           <div className="flex gap-2">
-            <Button disabled={busy} onClick={() => onSubmit(rating, comment)}>
-              <Send /> Kirim Ulasan
+            <Button 
+              disabled={busy || rating === 0} 
+              onClick={() => onSubmit(rating, comment)}
+              className="transition-all duration-fast"
+              aria-busy={busy}
+            >
+              {busy ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+                  Mengirim...
+                </span>
+              ) : (
+                <><Send /> Kirim Ulasan</>
+              )}
             </Button>
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>
               Batal
