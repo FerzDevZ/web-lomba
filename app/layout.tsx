@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers"
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/layout/Navbar"
 import { OfflineIndicator } from "@/components/layout/offline-indicator"
+import { ScrollToTop } from "@/components/layout/scroll-to-top"
 import { Toaster } from "sonner"
 import { Mail, HelpCircle } from "lucide-react"
 import { SITE_URL } from "@/lib/site-url"
@@ -257,6 +258,7 @@ export default function RootLayout({
             </footer>
             <Toaster position="top-center" richColors closeButton />
             <OfflineIndicator />
+            <ScrollToTop />
           </Providers>
         </ThemeProvider>
       </body>
