@@ -61,7 +61,8 @@
   .dark {
     --background: 20 14% 4%;
     --foreground: 40 20% 96%;
-    --card: 24 10% 7%;
+    /* Card: slightly lighter than background for depth */
+    --card: 24 10% 8%;
     --card-foreground: 40 20% 96%;
     --primary: 28 96% 58%;
     --primary-foreground: 20 14% 4%;
@@ -69,9 +70,10 @@
     --primary-strong: 28 96% 58%;
     --secondary: 28 60% 50%;
     --secondary-foreground: 20 14% 4%;
-    --muted: 24 8% 11%;
-    --muted-foreground: 30 8% 58%;
-    --accent: 24 12% 13%;
+    --muted: 24 8% 12%;
+    /* Muted foreground: increased from 58% to 62% for better readability */
+    --muted-foreground: 30 10% 62%;
+    --accent: 24 12% 14%;
     --accent-foreground: 40 20% 96%;
     /* Putih di atas 0 70% 55% hanya 4.40:1 (gagal AA tipis); 48% → 5.29:1
        dan masih 3.74:1 terhadap latar gelap sebagai indikator. */
@@ -93,8 +95,10 @@
     --info-soft: 213 50% 15%;
     --rating: 38 96% 58%;
     --brand-2: 45 96% 60%;
-    --border: 24 8% 16%;
-    --input: 24 8% 40%;
+    /* Border: increased from 16% to 18% for better visibility */
+    --border: 24 8% 18%;
+    /* Input: increased from 40% to 45% for better contrast */
+    --input: 24 8% 45%;
     --ring: 28 96% 58%;
   }
 
@@ -163,6 +167,33 @@
   /* Glass panel — lebih premium */
   .glass {
     @apply border bg-card/80 backdrop-blur-2xl shadow-card-lg;
+  }
+
+  /* Micro-interaction utilities */
+  .press-scale {
+    @apply transition-transform duration-fast;
+  }
+  .press-scale:active {
+    @apply scale-[0.97];
+  }
+
+  .hover-lift {
+    @apply transition-all duration-base ease-smooth;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-0.5 shadow-card-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-base ease-smooth;
+  }
+  .hover-glow:hover {
+    @apply shadow-glow;
+  }
+
+  /* Focus ring for dark mode */
+  .dark .focus-ring:focus-visible {
+    @apply ring-offset-card;
   }
 
   /* Gradien brand tunggal: dipakai logo, badge, dan aksen headline. */
