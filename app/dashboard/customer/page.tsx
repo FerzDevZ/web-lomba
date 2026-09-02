@@ -28,7 +28,7 @@ export default function CustomerDashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-content-in">
       <PageHeader
         title="Pesanan Saya"
         description="Pantau status pesanan jasa Anda dan jasa yang Anda simpan."

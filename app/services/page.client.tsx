@@ -218,7 +218,7 @@ function CatalogContent() {
   }
 
   return (
-    <PageShell className="py-8 pb-24 lg:pb-8">
+    <PageShell className="py-8 pb-24 lg:pb-8 animate-content-in">
       {/* Judul halaman berada DI ATAS grid, bukan di dalam kolom hasil: dengan
           sidebar filter yang dirender lebih dulu di DOM, h2 "Filter" muncul
           sebelum h1 dan urutan heading jadi tidak logis untuk screen reader. */}

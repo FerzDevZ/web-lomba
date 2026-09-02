@@ -188,7 +188,7 @@ function OrderDetailContent() {
   }
 
   return (
-    <PageShell width="prose" className="py-8">
+    <PageShell width="prose" className="py-8 animate-content-in">
       <Link
         href="/dashboard"
         className="focus-ring mb-6 inline-flex items-center gap-1 rounded-lg text-sm text-muted-foreground transition-colors hover:text-foreground"

@@ -102,7 +102,7 @@ export default async function ProviderProfilePage({
   )
 
   return (
-    <PageShell className="py-10">
+    <PageShell className="py-10 animate-content-in">
       {/* Header profil */}
       <div className="flex flex-col items-start gap-6 rounded-3xl border border-border bg-card p-6 shadow-card md:flex-row md:items-center md:p-8">
         {user.avatarUrl ? (

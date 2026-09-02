@@ -99,7 +99,7 @@ export default async function ProviderDashboardPage() {
   // Sidebar sudah dirender oleh app/dashboard/layout.tsx — membungkus ulang
   // dengan DashboardShell di sini menghasilkan dua sidebar bertumpuk.
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-content-in">
       <PageHeader
         title="Dashboard Provider"
         description="Kelola layanan dan pesanan yang masuk ke jasa Anda."

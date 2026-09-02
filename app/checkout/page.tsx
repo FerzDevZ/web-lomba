@@ -422,7 +422,7 @@ function CheckoutContent() {
   )
 
   return (
-    <PageShell className="py-10 pb-28 lg:pb-10">
+    <PageShell className="py-10 pb-28 lg:pb-10 animate-content-in">
       <div className="mx-auto mb-6 h-1.5 w-full max-w-[min(28rem,calc(100vw-32px))] overflow-hidden rounded-full bg-muted">
         <div className="h-full w-1/2 rounded-full bg-primary transition-[width] duration-300 ease-smooth" aria-hidden />
       </div>

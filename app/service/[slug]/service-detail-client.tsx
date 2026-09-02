@@ -241,7 +241,7 @@ export default function ServiceDetailClient({
   const [lightboxIdx, setLightboxIdx] = useState(0)
 
   return (
-    <PageShell className="py-8">
+    <PageShell className="py-8 animate-content-in">
       <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground transition-colors">Beranda</Link>
         <span aria-hidden className="text-muted-foreground/50">/</span>

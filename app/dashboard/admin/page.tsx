@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-content-in">
       <PageHeader
         title="Ringkasan Platform"
         description="Kesehatan ServisLokal dalam satu layar."

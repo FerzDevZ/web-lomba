@@ -82,7 +82,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <div>
+    <div className="animate-content-in">
       <Hero
         categories={categories}
         providers={heroProviders}
