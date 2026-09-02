@@ -21,7 +21,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
-const WELCOME_KEY = "servislokal-welcomed"
+const WELCOME_PREFIX = "servislokal-welcomed-"
 
 /**
  * Welcome modal untuk pengguna baru.
@@ -35,22 +35,23 @@ export function WelcomeModal({
   userName: string | null
 }) {
   const [open, setOpen] = React.useState(false)
+  const welcomeKey = `${WELCOME_PREFIX}${role}`
 
   React.useEffect(() => {
     try {
-      const alreadyWelcomed = localStorage.getItem(WELCOME_KEY)
+      const alreadyWelcomed = localStorage.getItem(welcomeKey)
       if (!alreadyWelcomed) {
         setOpen(true)
       }
     } catch {
       // localStorage not available
     }
-  }, [])
+  }, [welcomeKey])
 
   const handleClose = () => {
     setOpen(false)
     try {
-      localStorage.setItem(WELCOME_KEY, "true")
+      localStorage.setItem(welcomeKey, "true")
     } catch {}
   }
 

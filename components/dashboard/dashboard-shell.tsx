@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { WelcomeModal } from "@/components/dashboard/welcome-modal"
+import { Breadcrumb } from "@/components/layout/breadcrumb"
 
 type NavItem = {
   href: string
@@ -261,7 +262,10 @@ export function DashboardShell({
           </div>
         )}
 
-        <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+        <main className="min-w-0 flex-1 p-4 md:p-8">
+          <Breadcrumb className="mb-4" />
+          {children}
+        </main>
       </div>
     </div>
     </>
